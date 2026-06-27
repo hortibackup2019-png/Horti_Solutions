@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Preoperacional Volquetas — Planta PIL 1</title>
+<title>Control Operacional Bavaria — Planta PIL 1</title>
 
 <!-- PWA iOS -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,8 +17,8 @@
 (function(){
   // ── MANIFEST ──────────────────────────────────────────────
   const manifest = {
-    name: 'Preoperacional Volquetas — PIL 1',
-    short_name: 'Preop Volq.',
+    name: 'Control Operacional Bavaria — PIL 1',
+    short_name: 'Control Op.',
     description: 'Inspección preoperacional de volquetas',
     display: 'standalone',
     orientation: 'portrait',
@@ -78,7 +78,7 @@
       setTimeout(() => {
         const b = document.createElement('div');
         b.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#6e1423;color:#fff;padding:14px 18px;font-size:13px;display:flex;align-items:center;gap:12px;z-index:99999;font-family:sans-serif;border-top:3px solid #8b2942;box-shadow:0 -4px 20px rgba(0,0,0,.3)';
-        b.innerHTML = '<span style="font-size:22px">📲</span><span>Para instalar: toca <strong style="color:#e6a4b4">Compartir</strong> → <strong style="color:#e6a4b4">"Añadir a inicio"</strong></span><button onclick="this.parentNode.remove();localStorage.setItem(\'preop_volq_install\',\'1\')" style="margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0">OK</button>';
+        b.innerHTML = '<span style="font-size:22px"></span><span>Para instalar: toca <strong style="color:#e6a4b4">Compartir</strong> <strong style="color:#e6a4b4">"Añadir a inicio"</strong></span><button onclick="this.parentNode.remove();localStorage.setItem(\'preop_volq_install\',\'1\')" style="margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0">OK</button>';
         document.body.appendChild(b);
       }, 2500);
     }
@@ -87,7 +87,7 @@
       e.preventDefault();
       window._pwaPrompt = e;
       const btn = document.createElement('button');
-      btn.innerHTML = '⬇ Instalar app';
+      btn.innerHTML = 'Instalar app';
       btn.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#6e1423;color:#fff;border:2px solid #8b2942;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.35);font-family:sans-serif;letter-spacing:.5px';
       btn.onclick = async () => {
         if (!window._pwaPrompt) return;
@@ -803,8 +803,8 @@
 
 <div class="header">
   <div class="header-label">Planta PIL 1 — Gestión de Personal</div>
-  <div class="header-title">Preoperacional Volquetas</div>
-  <div class="header-sub">Inspección preventiva de vehículos antes de la operación</div>
+  <div class="header-title">Control Operacional Bavaria</div>
+  <div class="header-sub">Preoperacionales, monitoreos y alcoholimetrías de la operación</div>
 </div>
 
 <div class="tabs">
@@ -820,7 +820,7 @@
   <div class="tab-panel active" id="panel-preop">
 
   <div class="notice">
-    ⚠️ La inspección preoperacional se realiza como medida preventiva para identificar y corregir oportunamente condiciones que puedan generar accidentes o fallas durante la operación.
+    La inspección preoperacional se realiza como medida preventiva para identificar y corregir oportunamente condiciones que puedan generar accidentes o fallas durante la operación.
   </div>
 
   <!-- CARD 1: DATOS GENERALES -->
@@ -947,7 +947,7 @@
   <!-- ════════ PANEL: MONITOREOS OUTSAFETY ════════ -->
   <div class="tab-panel" id="panel-monitoreos">
     <div class="notice">
-      🛡️ Registre los monitoreos de OutSafety. Se requiere <strong>1 diario</strong>, <strong>1 semanal</strong> (lunes a viernes) y <strong>1 mensual</strong> (cualquier día del mes). Adjunte el número de certificado o confirme su realización.
+      Registre los monitoreos de OutSafety. Se requiere <strong>1 diario</strong>, <strong>1 semanal</strong> (lunes a viernes) y <strong>1 mensual</strong> (cualquier día del mes). Adjunte el número de certificado o confirme su realización.
     </div>
 
     <div class="card">
@@ -1002,7 +1002,7 @@
   <!-- ════════ PANEL: ALCOHOLIMETRÍA ════════ -->
   <div class="tab-panel" id="panel-alcohol">
     <div class="notice">
-      🫁 Registre las alcoholimetrías según los conductores programados (p. ej. turno día 7:00 a. m. y turno noche 7:00 p. m.). Adjunte una <strong>foto</strong> que evidencie la realización y el resultado.
+      Registre las alcoholimetrías según los conductores programados (p. ej. turno día 7:00 a. m. y turno noche 7:00 p. m.). Adjunte una <strong>foto</strong> que evidencie la realización y el resultado.
     </div>
 
     <div class="card">
@@ -1063,12 +1063,12 @@
   <!-- ════════ PANEL: INDICADORES (FRANJAS DE CUMPLIMIENTO) ════════ -->
   <div class="tab-panel" id="panel-indicadores">
     <div class="notice">
-      📊 Cumplimiento del día en tiempo real. Defina cuántos conductores están programados para que las metas diarias se calculen automáticamente.
+      Cumplimiento del día en tiempo real. Defina cuántos conductores están programados para que las metas diarias se calculen automáticamente.
     </div>
 
     <div class="card">
       <div class="card-header">
-        <div class="card-num">⚙</div>
+        <div class="card-num">●</div>
         <div class="card-title">Programación del día</div>
       </div>
       <div class="card-body">
@@ -1083,7 +1083,7 @@
           </div>
         </div>
         <div class="submit-area">
-          <button class="btn-reset" onclick="cargarIndicadores()">↻ Actualizar datos</button>
+          <button class="btn-reset" onclick="cargarIndicadores()">Actualizar datos</button>
         </div>
       </div>
     </div>
@@ -1095,7 +1095,7 @@
 
 </div>
 
-<div class="toast" id="toast">✅ Inspección registrada correctamente.</div>
+<div class="toast" id="toast">Inspección registrada correctamente.</div>
 
 <script>
 // ── URL ─────────────────────────────────────────────────────
@@ -1217,7 +1217,7 @@ function mostrarError(el, mensaje) {
     msg.style.cssText = 'color:var(--bad);font-size:12px;margin-top:4px;font-weight:600';
     el.parentNode.appendChild(msg);
   }
-  msg.textContent = '⚠ ' + mensaje;
+  msg.textContent = '' + mensaje;
   // Scroll suave hacia el campo
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   el.focus();
@@ -1269,7 +1269,7 @@ async function submitForm() {
     elRadio.scrollIntoView({ behavior: 'smooth', block: 'center' });
     // Mostrar toast de error
     const toast = document.getElementById('toast');
-    toast.textContent = `⚠ Ítem sin responder: "${primerSinRespuesta}" — por favor selecciona una opción.`;
+    toast.textContent = `Ítem sin responder: "${primerSinRespuesta}" — por favor selecciona una opción.`;
     toast.style.background = 'var(--bad)';
     toast.style.display = 'block';
     setTimeout(() => { toast.style.display = 'none'; toast.style.background = ''; }, 5000);
@@ -1312,11 +1312,11 @@ async function submitForm() {
     if (obsEl) obsEl.value = '';
 
     const toast = document.getElementById('toast');
-    toast.textContent = '✅ Inspección registrada correctamente en Google Sheets.';
+    toast.textContent = 'Inspección registrada correctamente en Google Sheets.';
     toast.style.display = 'block';
     setTimeout(() => { toast.style.display = 'none'; }, 4000);
   } catch {
-    alert('❌ Error al enviar. Verifique su conexión.');
+    alert('Error al enviar. Verifique su conexión.');
   }
   btn.disabled = false;
   btn.textContent = 'Guardar Inspección';
@@ -1356,7 +1356,7 @@ async function submitMonitoreo() {
   const obs         = document.getElementById('mon-obs').value.trim();
 
   if (!fecha || !conductor || !tipoMon || !realizado) {
-    toastMsg('⚠ Complete fecha, conductor, tipo y confirmación.', true);
+    toastMsg('Complete fecha, conductor, tipo y confirmación.', true);
     return;
   }
   const btn = document.querySelector('#panel-monitoreos .btn-submit');
@@ -1378,9 +1378,9 @@ async function submitMonitoreo() {
     document.getElementById('mon-obs').value         = '';
     document.getElementById('mon-tipo').selectedIndex      = 0;
     document.getElementById('mon-realizado').selectedIndex = 0;
-    toastMsg('✅ Monitoreo registrado correctamente.');
+    toastMsg('Monitoreo registrado correctamente.');
   } catch {
-    toastMsg('❌ Error al enviar. Verifique su conexión.', true);
+    toastMsg('Error al enviar. Verifique su conexión.', true);
   }
   btn.disabled = false; btn.textContent = 'Guardar Monitoreo';
 }
@@ -1421,11 +1421,11 @@ async function submitAlcohol() {
   const obs       = document.getElementById('alc-obs').value.trim();
 
   if (!fecha || !conductor || !turno || !hora || !resultado) {
-    toastMsg('⚠ Complete todos los campos obligatorios.', true);
+    toastMsg('Complete todos los campos obligatorios.', true);
     return;
   }
   if (!alcFotoB64) {
-    toastMsg('⚠ Adjunte la foto de evidencia.', true);
+    toastMsg('Adjunte la foto de evidencia.', true);
     return;
   }
   const btn = document.querySelector('#panel-alcohol .btn-submit');
@@ -1449,9 +1449,9 @@ async function submitAlcohol() {
     document.getElementById('alc-foto').value = '';
     document.getElementById('alc-foto-preview').innerHTML = '';
     alcFotoB64 = null; alcFotoMime = null; alcFotoName = '';
-    toastMsg('✅ Alcoholimetría registrada correctamente.');
+    toastMsg('Alcoholimetría registrada correctamente.');
   } catch {
-    toastMsg('❌ Error al enviar. Verifique su conexión.', true);
+    toastMsg('Error al enviar. Verifique su conexión.', true);
   }
   btn.disabled = false; btn.textContent = 'Guardar Alcoholimetría';
 }
@@ -1470,7 +1470,7 @@ async function cargarIndicadores() {
     if (json.ok) { indicadoresData = json; recalcularIndicadores(); }
     else cont.innerHTML = '<div class="kpi-loading">No se pudieron cargar los indicadores.</div>';
   } catch (e) {
-    cont.innerHTML = '<div class="kpi-loading">⚠ Error de conexión al cargar indicadores.</div>';
+    cont.innerHTML = '<div class="kpi-loading">Error de conexión al cargar indicadores.</div>';
   }
 }
 
