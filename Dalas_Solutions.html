@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control Operacional  — Seguimiento Conductores 1</title>
+<title>Control Operacional Bavaria — Planta PIL 1</title>
 
 <!-- PWA iOS -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,7 +17,7 @@
 (function(){
   // ── MANIFEST ──────────────────────────────────────────────
   const manifest = {
-    name: 'Control Operacional  — PIL 1',
+    name: 'Control Operacional Bavaria — PIL 1',
     short_name: 'Control Op.',
     description: 'Inspección preoperacional de volquetas',
     display: 'standalone',
@@ -105,7 +105,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* TEMA  — ROJO VINO (antes verde). Los nombres --green-* se conservan
+    /* TEMA BAVARIA — ROJO VINO (antes verde). Los nombres --green-* se conservan
        para no romper referencias, pero ahora apuntan a tonos vino. */
     --green-dark: #6e1423;   /* vino oscuro  */
     --green-mid: #8b2942;    /* vino medio   */
@@ -796,14 +796,116 @@
   .kpi-card.ok   .kpi-status-pill { background: var(--good-light);    color: var(--good); }
   .kpi-card.warn .kpi-status-pill { background: var(--regular-light); color: var(--regular); }
   .kpi-card.fail .kpi-status-pill { background: var(--bad-light);     color: var(--bad-strong); }
+/* ════════ LOGIN ════════ */
+#login-overlay{
+  position:fixed; inset:0; z-index:9999;
+  background:#ffffff;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+}
+.login-card{
+  width:100%; max-width:370px;
+  background:var(--green-dark);            /* centro rojo vino Bavaria */
+  border-radius:18px;
+  padding:32px 26px 28px;
+  box-shadow:0 18px 50px rgba(110,20,35,0.28);
+  text-align:center;
+}
+.login-logo{
+  background:#ffffff; border-radius:14px;
+  padding:14px; margin:0 auto 18px; max-width:180px;
+  display:flex; align-items:center; justify-content:center;
+  min-height:70px;
+}
+.login-logo img{ max-width:100%; max-height:70px; object-fit:contain; }
+.login-title{
+  font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:22px; letter-spacing:.02em; color:#fff; line-height:1.1;
+}
+.login-sub{ font-size:12px; color:rgba(255,255,255,.78); margin:4px 0 22px; }
+.login-field{ text-align:left; margin-bottom:14px; }
+.login-field label{
+  display:block; font-size:10px; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:rgba(255,255,255,.85); margin-bottom:6px;
+}
+.login-field input{
+  width:100%; padding:12px 14px; font-size:14px;
+  font-family:'Barlow',sans-serif; border:none; border-radius:9px;
+  background:#fff; color:var(--text-dark); outline:none;
+}
+.login-field input:focus{ box-shadow:0 0 0 3px rgba(255,255,255,.35); }
+.login-error{ min-height:16px; font-size:12px; color:#ffd2d2; margin:2px 0 12px; font-weight:600; }
+.login-btn{
+  width:100%; padding:13px; font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:16px; letter-spacing:.06em; text-transform:uppercase;
+  border:none; border-radius:9px; background:#fff; color:var(--green-dark);
+  cursor:pointer; transition:opacity .2s;
+}
+.login-btn:hover{ opacity:.9; }
+.login-btn:disabled{ opacity:.55; cursor:not-allowed; }
+
+/* ════════ FOOTER DE MARCAS (Horti / Dalas) ════════ */
+.brand-footer{
+  display:flex; align-items:center; justify-content:center; gap:22px;
+  padding:18px 16px 26px; margin-top:10px;
+}
+.brand-footer img{ max-height:38px; max-width:130px; object-fit:contain; opacity:.92; }
+.brand-sep{ width:1px; height:28px; background:var(--border); }
+
+/* ════════ TABLA DE REFERENCIA ALCOHOLEMIA ════════ */
+.ref-table{ margin-top:16px; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.ref-title{
+  background:var(--green-light); color:var(--green-dark);
+  font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  padding:9px 12px; border-bottom:1px solid var(--border);
+}
+.ref-table table{ width:100%; border-collapse:collapse; font-size:12px; }
+.ref-table th, .ref-table td{ padding:7px 10px; text-align:left; border-bottom:1px solid var(--border); }
+.ref-table th{ background:#faf6f7; color:var(--text-mid); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; }
+.ref-table tr:last-child td{ border-bottom:none; }
+.ref-table td{ color:var(--text-dark); }
+
+/* ════════ PROGRAMACIÓN (día / semana / mes) ════════ */
+.prog-block{ padding:14px 0; border-bottom:1px dashed var(--border); }
+.prog-block:first-child{ padding-top:0; }
+.prog-block:last-of-type{ border-bottom:none; }
+.prog-block-title{
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--green-dark); margin-bottom:10px;
+}
+.prog-hint{ font-size:11px; color:var(--text-light); margin-top:8px; }
 </style>
 </head>
 <body>
 
+<!-- ════════ PANTALLA DE LOGIN ════════ -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="6-Bavaria.png" alt="Bavaria" onerror="this.style.display='none'">
+    </div>
+    <div class="login-title">Control Operacional Bavaria</div>
+    <div class="login-sub">Acceso autorizado</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="login-user" autocomplete="username" placeholder="Usuario" autocapitalize="off">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" autocomplete="current-password" placeholder="Contraseña"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Ingresar</button>
+  </div>
+</div>
+
+<!-- ════════ APLICACIÓN (oculta hasta iniciar sesión) ════════ -->
+<div id="app-root" style="display:none">
 
 <div class="header">
-  <div class="header-label">Seguimiento Conductores 1 — Gestión de Personal</div>
-  <div class="header-title">Control Operacional </div>
+  <div class="header-label">Planta PIL 1 — Gestión de Personal</div>
+  <div class="header-title">Control Operacional Bavaria</div>
   <div class="header-sub">Preoperacionales, monitoreos y alcoholimetrías de la operación</div>
 </div>
 
@@ -847,6 +949,12 @@
           <label class="field-label">Nombre del conductor <span class="req">*</span></label>
           <input type="text" placeholder="Nombre completo" id="conductor" required>
         </div>
+      </div>
+      <div class="field" style="margin-top:16px">
+        <label class="field-label">Foto del vehículo <span class="req">*</span></label>
+        <input type="file" id="preop-foto" accept="image/*" capture="environment"
+               onchange="onFotoGeneric(this,'preop-foto-preview','preopFoto')" class="file-input">
+        <div id="preop-foto-preview" class="foto-preview"></div>
       </div>
     </div>
   </div>
@@ -991,6 +1099,12 @@
             <input type="text" id="mon-obs" placeholder="Opcional">
           </div>
         </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label">Foto del certificado OutSafety</label>
+          <input type="file" id="mon-foto" accept="image/*" capture="environment"
+                 onchange="onFotoGeneric(this,'mon-foto-preview','monCertificado')" class="file-input">
+          <div id="mon-foto-preview" class="foto-preview"></div>
+        </div>
         <div class="submit-area">
           <button class="btn-submit" onclick="submitMonitoreo()">Guardar Monitoreo</button>
         </div>
@@ -1002,7 +1116,7 @@
   <!-- ════════ PANEL: ALCOHOLIMETRÍA ════════ -->
   <div class="tab-panel" id="panel-alcohol">
     <div class="notice">
-      Registre las alcoholimetrías según los conductores programados (p. ej. turno día 7:00 a. m. y turno noche 7:00 p. m.). Adjunte una <strong>foto</strong> que evidencie la realización y el resultado.
+      Registre las alcoholimetrías según los conductores programados (p. ej. turno día 7:00 a. m. y turno noche 7:00 p. m.). Clasifique el resultado según la tabla de referencia y adjunte las tres evidencias.
     </div>
 
     <div class="card">
@@ -1036,8 +1150,11 @@
             <label class="field-label">Resultado <span class="req">*</span></label>
             <select id="alc-resultado">
               <option value="">Seleccione…</option>
-              <option value="negativo">Negativo (0.0)</option>
-              <option value="positivo">Positivo</option>
+              <option value="Negativo">Negativo (0,00–0,19 mg/L)</option>
+              <option value="Grado 0">Grado 0 (0,20–0,39 mg/L)</option>
+              <option value="Grado 1">Grado 1 (0,40–0,99 mg/L)</option>
+              <option value="Grado 2">Grado 2 (1,00–1,49 mg/L)</option>
+              <option value="Grado 3">Grado 3 (≥ 1,50 mg/L)</option>
             </select>
           </div>
           <div class="field">
@@ -1046,10 +1163,35 @@
           </div>
         </div>
 
+        <div class="ref-table">
+          <div class="ref-title">Tabla de alcoholemia en aire espirado (mg/L) — Ley 1696 de 2013</div>
+          <table>
+            <tr><th>Clasificación</th><th>Aire espirado (mg/L)</th><th>Sangre (mg/100 ml)</th><th>Soporte</th></tr>
+            <tr><td>Negativo</td><td>0,00 – 0,19</td><td>0 – 19</td><td>Sin embriaguez</td></tr>
+            <tr><td>Grado 0</td><td>0,20 – 0,39</td><td>20 – 39</td><td>Efectos iniciales</td></tr>
+            <tr><td>Grado 1</td><td>0,40 – 0,99</td><td>40 – 99</td><td>Embriaguez grado 1</td></tr>
+            <tr><td>Grado 2</td><td>1,00 – 1,49</td><td>100 – 149</td><td>Embriaguez grado 2</td></tr>
+            <tr><td>Grado 3</td><td>≥ 1,50</td><td>≥ 150</td><td>Embriaguez grado 3</td></tr>
+          </table>
+        </div>
+
         <div class="field" style="margin-top:18px">
-          <label class="field-label">Foto de evidencia <span class="req">*</span></label>
-          <input type="file" id="alc-foto" accept="image/*" capture="environment" onchange="onFotoChange(this)" class="file-input">
-          <div id="alc-foto-preview" class="foto-preview"></div>
+          <label class="field-label">Foto del resultado <span class="req">*</span></label>
+          <input type="file" id="alc-foto-resultado" accept="image/*" capture="environment"
+                 onchange="onFotoGeneric(this,'alc-prev-resultado','alcResultado')" class="file-input">
+          <div id="alc-prev-resultado" class="foto-preview"></div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label">Foto haciendo la prueba <span class="req">*</span></label>
+          <input type="file" id="alc-foto-prueba" accept="image/*" capture="environment"
+                 onchange="onFotoGeneric(this,'alc-prev-prueba','alcPrueba')" class="file-input">
+          <div id="alc-prev-prueba" class="foto-preview"></div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label">Consentimiento de la toma <span class="req">*</span></label>
+          <input type="file" id="alc-foto-consent" accept="image/*" capture="environment"
+                 onchange="onFotoGeneric(this,'alc-prev-consent','alcConsent')" class="file-input">
+          <div id="alc-prev-consent" class="foto-preview"></div>
         </div>
 
         <div class="submit-area">
@@ -1069,19 +1211,47 @@
     <div class="card">
       <div class="card-header">
         <div class="card-num">●</div>
-        <div class="card-title">Programación del día</div>
+        <div class="card-title">Programación</div>
       </div>
       <div class="card-body">
-        <div class="grid-2">
-          <div class="field">
-            <label class="field-label">Conductores turno día</label>
-            <input type="number" id="prog-dia" min="0" value="1" oninput="recalcularIndicadores()">
+
+        <div class="prog-block">
+          <div class="prog-block-title">Día</div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label">Conductores turno día</label>
+              <input type="number" id="prog-dia" min="0" value="1" oninput="recalcularIndicadores()">
+            </div>
+            <div class="field">
+              <label class="field-label">Conductores turno noche</label>
+              <input type="number" id="prog-noche" min="0" value="1" oninput="recalcularIndicadores()">
+            </div>
           </div>
-          <div class="field">
-            <label class="field-label">Conductores turno noche</label>
-            <input type="number" id="prog-noche" min="0" value="1" oninput="recalcularIndicadores()">
-          </div>
+          <div class="prog-hint">Define la meta de monitoreos diarios y alcoholimetrías (un registro por conductor programado).</div>
         </div>
+
+        <div class="prog-block">
+          <div class="prog-block-title">Semana</div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label">Meta de monitoreos semanales</label>
+              <input type="number" id="prog-semana" min="0" value="1" oninput="recalcularIndicadores()">
+            </div>
+          </div>
+          <div class="prog-hint">Monitoreos OutSafety esperados de lunes a viernes (mínimo 1).</div>
+        </div>
+
+        <div class="prog-block">
+          <div class="prog-block-title">Mes</div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label">Meta de monitoreos mensuales</label>
+              <input type="number" id="prog-mes" min="0" value="1" oninput="recalcularIndicadores()">
+            </div>
+          </div>
+          <div class="prog-hint">Monitoreos OutSafety esperados en el mes (mínimo 1).</div>
+        </div>
+
         <div class="submit-area">
           <button class="btn-reset" onclick="cargarIndicadores()">Actualizar datos</button>
         </div>
@@ -1095,11 +1265,47 @@
 
 </div>
 
+<div class="brand-footer">
+  <img src="Logo-verde.jpg.jpeg" alt="Horti Organic" onerror="this.style.display='none'">
+  <span class="brand-sep"></span>
+  <img src="Dalas.png" alt="Dalas Solutions" onerror="this.style.display='none'">
+</div>
+
 <div class="toast" id="toast">Inspección registrada correctamente.</div>
+
+</div><!-- /app-root -->
 
 <script>
 // ── URL ─────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3cf76Wz-GSF4VM6iBlsUTknnUMlhe93eYVlX8xtiqhe6eQtNXUubXcPYtAWRgpqKWIw/exec';
+const LOGIN_URL       = 'https://script.google.com/macros/s/AKfycby_aIQNO7QBYv8WR-ukTM4lJU2mq7029UgHW7YQ_DcQHGik4UqZPdEMQYvrl-kZmVZo/exec';
+let usuarioActual = '';
+
+// ── LOGIN ───────────────────────────────────────────────────
+async function doLogin() {
+  const u   = document.getElementById('login-user').value.trim();
+  const p   = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  if (!u || !p) { err.textContent = 'Ingrese usuario y contraseña.'; return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Verificando…';
+  try {
+    const res  = await fetch(LOGIN_URL + '?action=login&usuario=' + encodeURIComponent(u) + '&clave=' + encodeURIComponent(p));
+    const json = await res.json();
+    if (json && json.ok) {
+      usuarioActual = json.usuario || u;
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('app-root').style.display = 'block';
+      window.scrollTo(0, 0);
+    } else {
+      err.textContent = (json && json.error) ? json.error : 'Usuario o contraseña incorrectos.';
+    }
+  } catch (e) {
+    err.textContent = 'Error de conexión. Intente de nuevo.';
+  }
+  btn.disabled = false; btn.textContent = 'Ingresar';
+}
 
 // Fecha de HOY en formato yyyy-mm-dd usando la hora LOCAL (no UTC),
 // para que el campo no salte de día por la noche.
@@ -1281,6 +1487,12 @@ async function submitForm() {
     radioValues[r.name] = r.value;
   });
 
+  if (!fotos.preopFoto) {
+    mostrarError(document.getElementById('preop-foto'), 'Adjunte la foto del vehículo');
+    document.getElementById('preop-foto').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
   const payload = {
     tipo:          'volqueta',
     fecha:         document.getElementById('fecha').value,
@@ -1289,6 +1501,8 @@ async function submitForm() {
     conductor:     document.getElementById('conductor').value,
     diligencia:    document.getElementById('diligencia').value,
     observaciones: (document.getElementById('observaciones') ? document.getElementById('observaciones').value : ''),
+    foto_vehiculo:      fotos.preopFoto.b64,
+    foto_vehiculo_mime: fotos.preopFoto.mime,
     ...radioValues,
   };
 
@@ -1310,6 +1524,11 @@ async function submitForm() {
     document.getElementById('fecha').value = hoyLocal();
     const obsEl = document.querySelector('textarea');
     if (obsEl) obsEl.value = '';
+    const fv = document.getElementById('preop-foto');
+    if (fv) fv.value = '';
+    const fvp = document.getElementById('preop-foto-preview');
+    if (fvp) fvp.innerHTML = '';
+    delete fotos.preopFoto;
 
     const toast = document.getElementById('toast');
     toast.textContent = 'Inspección registrada correctamente en Google Sheets.';
@@ -1362,22 +1581,30 @@ async function submitMonitoreo() {
   const btn = document.querySelector('#panel-monitoreos .btn-submit');
   btn.disabled = true; btn.textContent = 'Enviando…';
   try {
+    const body = {
+      tipo: 'monitoreo',
+      fecha, conductor,
+      monitoreo_tipo: tipoMon,
+      realizado, certificado,
+      observaciones: obs,
+    };
+    if (fotos.monCertificado) {
+      body.foto_certificado      = fotos.monCertificado.b64;
+      body.foto_certificado_mime = fotos.monCertificado.mime;
+    }
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tipo: 'monitoreo',
-        fecha, conductor,
-        monitoreo_tipo: tipoMon,
-        realizado, certificado,
-        observaciones: obs,
-      }),
+      body: JSON.stringify(body),
     });
     document.getElementById('mon-conductor').value   = '';
     document.getElementById('mon-certificado').value = '';
     document.getElementById('mon-obs').value         = '';
     document.getElementById('mon-tipo').selectedIndex      = 0;
     document.getElementById('mon-realizado').selectedIndex = 0;
+    const mf = document.getElementById('mon-foto');           if (mf) mf.value = '';
+    const mfp = document.getElementById('mon-foto-preview');  if (mfp) mfp.innerHTML = '';
+    delete fotos.monCertificado;
     toastMsg('Monitoreo registrado correctamente.');
   } catch {
     toastMsg('Error al enviar. Verifique su conexión.', true);
@@ -1386,26 +1613,25 @@ async function submitMonitoreo() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  ALCOHOLIMETRÍA (con foto de evidencia)
+//  FOTOS (manejador genérico reutilizable)
+//  Guarda cada foto en fotos[clave] = { b64, mime, name }
 // ════════════════════════════════════════════════════════════
-let alcFotoB64  = null;
-let alcFotoMime = null;
-let alcFotoName = '';
-
-function onFotoChange(input) {
+const fotos = {};
+function onFotoGeneric(input, previewId, key) {
   const file = input.files[0];
-  const prev = document.getElementById('alc-foto-preview');
-  if (!file) { alcFotoB64 = null; prev.innerHTML = ''; return; }
+  const prev = document.getElementById(previewId);
+  if (!file) { delete fotos[key]; if (prev) prev.innerHTML = ''; return; }
   const reader = new FileReader();
   reader.onload = e => {
-    alcFotoB64  = e.target.result.split(',')[1];
-    alcFotoMime = file.type;
-    alcFotoName = file.name;
-    prev.innerHTML = '<img src="' + e.target.result + '" alt="evidencia">';
+    fotos[key] = { b64: e.target.result.split(',')[1], mime: file.type, name: file.name };
+    if (prev) prev.innerHTML = '<img src="' + e.target.result + '" alt="foto">';
   };
   reader.readAsDataURL(file);
 }
 
+// ════════════════════════════════════════════════════════════
+//  ALCOHOLIMETRÍA (resultado por grados + 3 fotos)
+// ════════════════════════════════════════════════════════════
 function onTurnoChange(sel) {
   const hora = document.getElementById('alc-hora');
   if (sel.value === 'dia'   && !hora.value) hora.value = '07:00';
@@ -1424,10 +1650,10 @@ async function submitAlcohol() {
     toastMsg('Complete todos los campos obligatorios.', true);
     return;
   }
-  if (!alcFotoB64) {
-    toastMsg('Adjunte la foto de evidencia.', true);
-    return;
-  }
+  if (!fotos.alcResultado) { toastMsg('Adjunte la foto del resultado.', true); return; }
+  if (!fotos.alcPrueba)    { toastMsg('Adjunte la foto haciendo la prueba.', true); return; }
+  if (!fotos.alcConsent)   { toastMsg('Adjunte el consentimiento de la toma.', true); return; }
+
   const btn = document.querySelector('#panel-alcohol .btn-submit');
   btn.disabled = true; btn.textContent = 'Enviando…';
   try {
@@ -1438,7 +1664,12 @@ async function submitAlcohol() {
         tipo: 'alcoholimetria',
         fecha, conductor, turno, hora, resultado,
         observaciones: obs,
-        foto: alcFotoB64, fotoMime: alcFotoMime, fotoNombre: alcFotoName,
+        foto_resultado:      fotos.alcResultado.b64,
+        foto_resultado_mime: fotos.alcResultado.mime,
+        foto_prueba:         fotos.alcPrueba.b64,
+        foto_prueba_mime:    fotos.alcPrueba.mime,
+        foto_consent:        fotos.alcConsent.b64,
+        foto_consent_mime:   fotos.alcConsent.mime,
       }),
     });
     document.getElementById('alc-conductor').value = '';
@@ -1446,9 +1677,13 @@ async function submitAlcohol() {
     document.getElementById('alc-resultado').selectedIndex = 0;
     document.getElementById('alc-hora').value = '';
     document.getElementById('alc-obs').value  = '';
-    document.getElementById('alc-foto').value = '';
-    document.getElementById('alc-foto-preview').innerHTML = '';
-    alcFotoB64 = null; alcFotoMime = null; alcFotoName = '';
+    ['alc-foto-resultado', 'alc-foto-prueba', 'alc-foto-consent'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    ['alc-prev-resultado', 'alc-prev-prueba', 'alc-prev-consent'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerHTML = '';
+    });
+    delete fotos.alcResultado; delete fotos.alcPrueba; delete fotos.alcConsent;
     toastMsg('Alcoholimetría registrada correctamente.');
   } catch {
     toastMsg('Error al enviar. Verifique su conexión.', true);
@@ -1525,8 +1760,10 @@ function kpiPreop(antes9, total) {
 
 function recalcularIndicadores() {
   if (!indicadoresData) return;
-  const dia   = parseInt(document.getElementById('prog-dia').value)   || 0;
-  const noche = parseInt(document.getElementById('prog-noche').value) || 0;
+  const dia    = parseInt(document.getElementById('prog-dia').value)    || 0;
+  const noche  = parseInt(document.getElementById('prog-noche').value)  || 0;
+  const semana = parseInt(document.getElementById('prog-semana').value) || 0;
+  const mes    = parseInt(document.getElementById('prog-mes').value)    || 0;
   const conductores = dia + noche;
   const d = indicadoresData;
   const cont = document.getElementById('kpi-container');
@@ -1535,8 +1772,8 @@ function recalcularIndicadores() {
   html += kpiPreop(d.preop.antes9, d.preop.total);
   html += kpiCard('Monitoreo diario OutSafety', d.monitoreo.diario, conductores,
                   'Meta = conductores programados (' + conductores + ')');
-  html += kpiCard('Monitoreo semanal OutSafety', d.monitoreo.semanal, 1, 'Esta semana (L–V)');
-  html += kpiCard('Monitoreo mensual OutSafety', d.monitoreo.mensual, 1, 'Este mes');
+  html += kpiCard('Monitoreo semanal OutSafety', d.monitoreo.semanal, semana, 'Esta semana (L–V)');
+  html += kpiCard('Monitoreo mensual OutSafety', d.monitoreo.mensual, mes, 'Este mes');
   html += kpiCard('Alcoholimetrías', d.alcohol.total, conductores,
                   'Día: ' + d.alcohol.dia + ' · Noche: ' + d.alcohol.noche);
   cont.innerHTML = html;
