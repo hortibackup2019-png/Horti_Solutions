@@ -901,6 +901,7 @@
 }
 .prog-hint{ font-size:11px; color:var(--text-light); margin-top:8px; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -1543,6 +1544,23 @@ async function submitForm() {
       body: JSON.stringify(payload),
     });
 
+    // ── Exportar PDF resumen (antes de limpiar) ─────────────
+    try {
+      const filas = [
+        ['Fecha', payload.fecha],
+        ['Placa', payload.placa],
+        ['Kilometraje', payload.km],
+        ['Conductor', payload.conductor],
+        ['Quien diligencia', payload.diligencia],
+      ];
+      Object.keys(radioValues).forEach(k => filas.push([k, ESTADO_TXT[radioValues[k]] || radioValues[k]]));
+      filas.push(['Observaciones', payload.observaciones || '—']);
+      const imagenes = [];
+      if (fotos.preopFoto) imagenes.push({ titulo: 'Foto del vehículo',
+        dataURL: 'data:' + fotos.preopFoto.mime + ';base64,' + fotos.preopFoto.b64 });
+      await exportarResumenPDF('Preoperacional', filas, imagenes);
+    } catch (e) { console.warn('PDF:', e); }
+
     // ── Limpiar formulario (mantener sesión activa) ─────────
     document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
     document.getElementById('placa').value = '';
@@ -1623,6 +1641,24 @@ async function submitMonitoreo() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+
+    // ── Exportar PDF resumen ────────────────────────────────
+    try {
+      const tipoTxt = { diario:'Diario', semanal:'Semanal (L–V)', mensual:'Mensual' }[tipoMon] || tipoMon;
+      const filas = [
+        ['Fecha', fecha],
+        ['Conductor', conductor],
+        ['Tipo de monitoreo', tipoTxt],
+        ['¿Realizado?', realizado === 'si' ? 'Sí' : 'No'],
+        ['N.° certificado', certificado || '—'],
+        ['Observaciones', obs || '—'],
+      ];
+      const imagenes = [];
+      if (fotos.monCertificado) imagenes.push({ titulo: 'Certificado OutSafety',
+        dataURL: 'data:' + fotos.monCertificado.mime + ';base64,' + fotos.monCertificado.b64 });
+      await exportarResumenPDF('Monitoreo OutSafety', filas, imagenes);
+    } catch (e) { console.warn('PDF:', e); }
+
     document.getElementById('mon-conductor').value   = '';
     document.getElementById('mon-certificado').value = '';
     document.getElementById('mon-obs').value         = '';
@@ -1698,6 +1734,26 @@ async function submitAlcohol() {
         foto_consent_mime:   fotos.alcConsent.mime,
       }),
     });
+
+    // ── Exportar PDF resumen ────────────────────────────────
+    try {
+      const turnoTxt = turno === 'dia' ? 'Día' : turno === 'noche' ? 'Noche' : turno;
+      const filas = [
+        ['Fecha', fecha],
+        ['Conductor', conductor],
+        ['Turno', turnoTxt],
+        ['Hora de la prueba', hora],
+        ['Resultado', resultado],
+        ['Observaciones', obs || '—'],
+      ];
+      const imagenes = [
+        { titulo: 'Foto del resultado',      dataURL: 'data:' + fotos.alcResultado.mime + ';base64,' + fotos.alcResultado.b64 },
+        { titulo: 'Foto haciendo la prueba', dataURL: 'data:' + fotos.alcPrueba.mime    + ';base64,' + fotos.alcPrueba.b64 },
+        { titulo: 'Consentimiento de la toma', dataURL: 'data:' + fotos.alcConsent.mime + ';base64,' + fotos.alcConsent.b64 },
+      ];
+      await exportarResumenPDF('Alcoholimetria', filas, imagenes);
+    } catch (e) { console.warn('PDF:', e); }
+
     document.getElementById('alc-conductor').value = '';
     document.getElementById('alc-turno').selectedIndex     = 0;
     document.getElementById('alc-resultado').selectedIndex = 0;
@@ -1803,6 +1859,114 @@ function recalcularIndicadores() {
   html += kpiCard('Alcoholimetrías', d.alcohol.total, conductores,
                   'Día: ' + d.alcohol.dia + ' · Noche: ' + d.alcohol.noche);
   cont.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════
+//  EXPORTAR PDF (resumen + fotos + logos corporativos)
+// ════════════════════════════════════════════════════════════
+let _logosCache = null;
+function imgToData(url) {
+  return new Promise(res => {
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        res({ dataURL: c.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
+      } catch (e) { res(null); }
+    };
+    img.onerror = () => res(null);
+    img.src = url;
+  });
+}
+async function getLogos() {
+  if (_logosCache) return _logosCache;
+  const files = ['6-Bavaria.png', 'Logo-verde.jpg.jpeg', 'Dalas.png'];
+  const arr = await Promise.all(files.map(imgToData));
+  _logosCache = arr.filter(Boolean);
+  return _logosCache;
+}
+function imgDims(dataURL) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight,
+                             fmt: dataURL.indexOf('image/png') > -1 ? 'PNG' : 'JPEG' });
+    img.onerror = () => res({ w: 1, h: 1, fmt: 'JPEG' });
+    img.src = dataURL;
+  });
+}
+const ESTADO_TXT = { bueno:'Bueno', regular:'Regular', malo:'Malo', no_aplica:'No aplica', 'n/a':'No aplica' };
+
+async function exportarResumenPDF(modulo, filas, imagenes) {
+  if (!window.jspdf || !window.jspdf.jsPDF) { console.warn('jsPDF no disponible'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, M = 15; let y = 12;
+
+  // Logos corporativos
+  try {
+    const logos = await getLogos();
+    let lx = M; const logoH = 15;
+    for (const lg of logos) {
+      const w = logoH * (lg.w / lg.h);
+      try { doc.addImage(lg.dataURL, 'PNG', lx, y, w, logoH); } catch (e) {}
+      lx += w + 8;
+    }
+    if (logos.length) y += logoH + 6;
+  } catch (e) {}
+
+  // Encabezado
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(110, 20, 35);
+  doc.text('Control Operacional Bavaria', M, y); y += 6;
+  doc.setFontSize(12); doc.setTextColor(40, 40, 40);
+  doc.text('Resumen — ' + modulo, M, y); y += 5;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(110, 110, 110);
+  doc.text('Generado: ' + new Date().toLocaleString('es-CO') +
+           (usuarioActual ? ('   ·   Usuario: ' + usuarioActual) : ''), M, y); y += 4;
+  doc.setDrawColor(205); doc.line(M, y, W - M, y); y += 7;
+
+  // Filas
+  doc.setFontSize(10);
+  const labelW = 68;
+  for (const [label, value] of filas) {
+    if (y > 275) { doc.addPage(); y = 15; }
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(70, 70, 70);
+    const lbl = doc.splitTextToSize(String(label), labelW - 2);
+    doc.text(lbl, M, y);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(20, 20, 20);
+    const txt = doc.splitTextToSize(String(value == null || value === '' ? '—' : value), W - M - M - labelW);
+    doc.text(txt, M + labelW, y);
+    y += Math.max(5, Math.max(lbl.length, txt.length) * 4.6);
+  }
+  y += 4;
+
+  // Imágenes (fotos)
+  for (const im of imagenes) {
+    if (!im || !im.dataURL) continue;
+    const dims = await imgDims(im.dataURL);
+    const maxW = W - M - M, maxH = 95;
+    let w = maxW, h = w * (dims.h / dims.w);
+    if (h > maxH) { h = maxH; w = h * (dims.w / dims.h); }
+    if (y + 6 + h > 285) { doc.addPage(); y = 15; }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(70, 70, 70);
+    doc.text(im.titulo || 'Foto', M, y); y += 4;
+    try { doc.addImage(im.dataURL, dims.fmt, M, y, w, h); } catch (e) {}
+    y += h + 7;
+  }
+
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  const fname = 'Resumen_' + modulo.replace(/\s+/g, '_') + '_' + stamp + '.pdf';
+
+  // Abrir en una pestaña nueva…
+  try {
+    const blobUrl = doc.output('bloburl');
+    const win = window.open(blobUrl, '_blank');
+    if (!win) toastMsg('Permita las ventanas emergentes para ver el PDF en una pestaña.', true);
+  } catch (e) { console.warn('Abrir PDF:', e); }
+
+  // …y descargarlo.
+  doc.save(fname);
 }
 
 // ── INIT módulos nuevos ──────────────────────────────────────
