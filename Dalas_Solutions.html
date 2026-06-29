@@ -930,6 +930,30 @@
 .geo-map img{ width:100%; border-radius:8px; border:1.5px solid var(--border); }
 .geo-coords{ font-size:11px; color:var(--text-mid); font-weight:600; }
 .geo-loading{ font-size:11px; color:var(--text-light); align-self:center; }
+
+/* ════════ CONTROLES DE FOTO / CÁMARA ════════ */
+.foto-controls{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.btn-cam{
+  flex-shrink:0; padding:10px 16px; font-family:'Barlow Condensed',sans-serif;
+  font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+  border:none; border-radius:8px; background:var(--green-dark); color:#fff; cursor:pointer;
+}
+.btn-cam:hover{ background:var(--green-mid); }
+.foto-controls .file-input{ flex:1; min-width:180px; }
+
+.cam-modal{
+  display:none; position:fixed; inset:0; z-index:10000;
+  background:rgba(0,0,0,.88); align-items:center; justify-content:center; padding:16px;
+}
+.cam-box{ width:100%; max-width:520px; display:flex; flex-direction:column; gap:14px; }
+#cam-video{ width:100%; border-radius:12px; background:#000; max-height:70vh; }
+.cam-actions{ display:flex; gap:12px; }
+.cam-btn{
+  flex:1; padding:14px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:16px; letter-spacing:.06em; text-transform:uppercase; border:none; border-radius:9px; cursor:pointer;
+}
+.cam-shot{ background:#fff; color:var(--green-dark); }
+.cam-cancel{ background:rgba(255,255,255,.18); color:#fff; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -1016,8 +1040,11 @@
       </div>
       <div class="field" style="margin-top:16px">
         <label class="field-label">Foto del vehículo <span class="req">*</span></label>
-        <input type="file" id="preop-foto" accept="image/*" capture="environment"
-               onchange="onFotoGeneric(this,'preop-foto-preview','preopFoto')" class="file-input">
+        <div class="foto-controls">
+          <button type="button" class="btn-cam" onclick="abrirCamara('preop-foto-preview','preopFoto')">Tomar foto</button>
+          <input type="file" id="preop-foto" accept="image/*" capture="environment"
+                 onchange="onFotoGeneric(this,'preop-foto-preview','preopFoto')" class="file-input">
+        </div>
         <div id="preop-foto-preview" class="foto-preview"></div>
       </div>
     </div>
@@ -1165,8 +1192,11 @@
         </div>
         <div class="field" style="margin-top:14px">
           <label class="field-label">Foto del certificado OutSafety</label>
-          <input type="file" id="mon-foto" accept="image/*" capture="environment"
-                 onchange="onFotoGeneric(this,'mon-foto-preview','monCertificado')" class="file-input">
+          <div class="foto-controls">
+            <button type="button" class="btn-cam" onclick="abrirCamara('mon-foto-preview','monCertificado')">Tomar foto</button>
+            <input type="file" id="mon-foto" accept="image/*" capture="environment"
+                   onchange="onFotoGeneric(this,'mon-foto-preview','monCertificado')" class="file-input">
+          </div>
           <div id="mon-foto-preview" class="foto-preview"></div>
         </div>
         <div class="submit-area">
@@ -1241,20 +1271,29 @@
 
         <div class="field" style="margin-top:18px">
           <label class="field-label">Foto del resultado <span class="req">*</span></label>
-          <input type="file" id="alc-foto-resultado" accept="image/*" capture="environment"
-                 onchange="onFotoGeneric(this,'alc-prev-resultado','alcResultado')" class="file-input">
+          <div class="foto-controls">
+            <button type="button" class="btn-cam" onclick="abrirCamara('alc-prev-resultado','alcResultado')">Tomar foto</button>
+            <input type="file" id="alc-foto-resultado" accept="image/*" capture="environment"
+                   onchange="onFotoGeneric(this,'alc-prev-resultado','alcResultado')" class="file-input">
+          </div>
           <div id="alc-prev-resultado" class="foto-preview"></div>
         </div>
         <div class="field" style="margin-top:14px">
           <label class="field-label">Foto haciendo la prueba <span class="req">*</span></label>
-          <input type="file" id="alc-foto-prueba" accept="image/*" capture="environment"
-                 onchange="onFotoGeneric(this,'alc-prev-prueba','alcPrueba')" class="file-input">
+          <div class="foto-controls">
+            <button type="button" class="btn-cam" onclick="abrirCamara('alc-prev-prueba','alcPrueba')">Tomar foto</button>
+            <input type="file" id="alc-foto-prueba" accept="image/*" capture="environment"
+                   onchange="onFotoGeneric(this,'alc-prev-prueba','alcPrueba')" class="file-input">
+          </div>
           <div id="alc-prev-prueba" class="foto-preview"></div>
         </div>
         <div class="field" style="margin-top:14px">
           <label class="field-label">Consentimiento de la toma <span class="req">*</span></label>
-          <input type="file" id="alc-foto-consent" accept="image/*" capture="environment"
-                 onchange="onFotoGeneric(this,'alc-prev-consent','alcConsent')" class="file-input">
+          <div class="foto-controls">
+            <button type="button" class="btn-cam" onclick="abrirCamara('alc-prev-consent','alcConsent')">Tomar foto</button>
+            <input type="file" id="alc-foto-consent" accept="image/*" capture="environment"
+                   onchange="onFotoGeneric(this,'alc-prev-consent','alcConsent')" class="file-input">
+          </div>
           <div id="alc-prev-consent" class="foto-preview"></div>
         </div>
 
@@ -1363,6 +1402,17 @@
 </div>
 
 <div class="toast" id="toast">Inspección registrada correctamente.</div>
+
+<!-- ════════ CÁMARA EN VIVO ════════ -->
+<div id="cam-modal" class="cam-modal">
+  <div class="cam-box">
+    <video id="cam-video" playsinline autoplay muted></video>
+    <div class="cam-actions">
+      <button type="button" class="cam-btn cam-cancel" onclick="cerrarCamara()">Cancelar</button>
+      <button type="button" class="cam-btn cam-shot" onclick="capturarFoto()">Capturar</button>
+    </div>
+  </div>
+</div>
 
 </div><!-- /app-root -->
 
@@ -1752,35 +1802,70 @@ async function submitMonitoreo() {
 const fotos = {};
 function onFotoGeneric(input, previewId, key) {
   const file = input.files[0];
-  const prev = document.getElementById(previewId);
-  if (!file) { delete fotos[key]; if (prev) prev.innerHTML = ''; return; }
+  if (!file) { delete fotos[key]; const p = document.getElementById(previewId); if (p) p.innerHTML = ''; return; }
   const reader = new FileReader();
-  reader.onload = async e => {
-    const dataURL = e.target.result;
-    fotos[key] = { b64: dataURL.split(',')[1], mime: file.type, name: file.name };
-    if (prev) {
-      prev.innerHTML =
-        '<div class="geo-wrap">' +
-          '<img src="' + dataURL + '" alt="foto">' +
-          '<div class="geo-map" id="' + previewId + '-map"><span class="geo-loading">Ubicando…</span></div>' +
-        '</div>';
-    }
-    // Geolocalización + mini-mapa
-    const loc = await obtenerUbicacion();
-    const mapDiv = document.getElementById(previewId + '-map');
-    if (loc) {
-      fotos[key].lat = loc.lat; fotos[key].lng = loc.lng;
-      const mapURL = await mapaStatico(loc.lat, loc.lng, 16, 320, 220);
-      fotos[key].mapURL = mapURL;
-      if (mapDiv) {
-        mapDiv.innerHTML = (mapURL ? '<img src="' + mapURL + '" alt="mapa">' : '') +
-          '<div class="geo-coords">' + loc.lat.toFixed(5) + ', ' + loc.lng.toFixed(5) + '</div>';
-      }
-    } else if (mapDiv) {
-      mapDiv.innerHTML = '<span class="geo-loading">Sin ubicación (permiso denegado o no disponible)</span>';
-    }
-  };
+  reader.onload = e => procesarFoto(e.target.result, file.type, file.name, previewId, key);
   reader.readAsDataURL(file);
+}
+
+// Procesa una foto (venga de archivo o de la cámara): guarda, geolocaliza y dibuja mapa
+async function procesarFoto(dataURL, mime, name, previewId, key) {
+  fotos[key] = { b64: dataURL.split(',')[1], mime: mime || 'image/jpeg', name: name || ('foto_' + Date.now() + '.jpg') };
+  const prev = document.getElementById(previewId);
+  if (prev) {
+    prev.innerHTML =
+      '<div class="geo-wrap">' +
+        '<img src="' + dataURL + '" alt="foto">' +
+        '<div class="geo-map" id="' + previewId + '-map"><span class="geo-loading">Ubicando…</span></div>' +
+      '</div>';
+  }
+  const loc = await obtenerUbicacion();
+  const mapDiv = document.getElementById(previewId + '-map');
+  if (loc) {
+    fotos[key].lat = loc.lat; fotos[key].lng = loc.lng;
+    const mapURL = await mapaStatico(loc.lat, loc.lng, 16, 320, 220);
+    fotos[key].mapURL = mapURL;
+    if (mapDiv) {
+      mapDiv.innerHTML = (mapURL ? '<img src="' + mapURL + '" alt="mapa">' : '') +
+        '<div class="geo-coords">' + loc.lat.toFixed(5) + ', ' + loc.lng.toFixed(5) + '</div>';
+    }
+  } else if (mapDiv) {
+    mapDiv.innerHTML = '<span class="geo-loading">Sin ubicación (permiso denegado o no disponible)</span>';
+  }
+}
+
+// ── CÁMARA EN VIVO (funciona en celular y computador) ────────
+let _camStream = null, _camTarget = null;
+async function abrirCamara(previewId, key) {
+  _camTarget = { previewId: previewId, key: key };
+  const modal = document.getElementById('cam-modal');
+  const video = document.getElementById('cam-video');
+  try {
+    _camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } }, audio: false
+    });
+    video.srcObject = _camStream;
+    await video.play();
+    modal.style.display = 'flex';
+  } catch (e) {
+    toastMsg('No se pudo abrir la cámara. Use "Seleccionar archivo".', true);
+  }
+}
+function capturarFoto() {
+  const video = document.getElementById('cam-video');
+  const c = document.createElement('canvas');
+  c.width  = video.videoWidth  || 1280;
+  c.height = video.videoHeight || 720;
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  const dataURL = c.toDataURL('image/jpeg', 0.9);
+  const t = _camTarget;
+  cerrarCamara();
+  if (t) procesarFoto(dataURL, 'image/jpeg', 'camara_' + Date.now() + '.jpg', t.previewId, t.key);
+}
+function cerrarCamara() {
+  if (_camStream) { _camStream.getTracks().forEach(tr => tr.stop()); _camStream = null; }
+  const video = document.getElementById('cam-video'); if (video) video.srcObject = null;
+  const modal = document.getElementById('cam-modal'); if (modal) modal.style.display = 'none';
 }
 
 // ── Geolocalización ──────────────────────────────────────────
