@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analítica en tiempo real — Bavaria</title>
+<link rel="icon" href="BAVARIA.jpg">
 
 <!-- PWA iOS -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Preop Volquetas">
+<meta name="apple-mobile-web-app-title" content="Analítica Bavaria">
 <meta name="theme-color" content="#6e1423">
 <!-- PWA Android/Chrome -->
 <meta name="mobile-web-app-capable" content="yes">
@@ -26,10 +27,8 @@
     theme_color: '#6e1423',
     start_url: location.pathname + location.search,
     icons: [
-      {
-        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%236e1423'/%3E%3Ctext y='340' x='256' text-anchor='middle' font-size='260' font-family='serif' font-weight='700' fill='%23ffffff'%3E🚛%3C/text%3E%3C/svg%3E",
-        sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable'
-      }
+      { src: new URL('BAVARIA.jpg', location.href).href, sizes: '192x192', type: 'image/jpeg', purpose: 'any' },
+      { src: new URL('BAVARIA.jpg', location.href).href, sizes: '512x512', type: 'image/jpeg', purpose: 'any' }
     ]
   };
   const ml = document.createElement('link');
@@ -40,7 +39,7 @@
   // ── APPLE TOUCH ICON ──────────────────────────────────────
   const icon = document.createElement('link');
   icon.rel = 'apple-touch-icon';
-  icon.href = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%236e1423'/%3E%3Ctext y='130' x='90' text-anchor='middle' font-size='110' font-family='serif'%3E🚛%3C/text%3E%3C/svg%3E";
+  icon.href = new URL('BAVARIA.jpg', location.href).href;
   document.head.appendChild(icon);
 
   // ── SERVICE WORKER ────────────────────────────────────────
