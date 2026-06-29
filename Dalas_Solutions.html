@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control Operacional Bavaria — HortiOrganic Solutions IT 1</title>
+<title>Control Operacional Bavaria — Planta PIL 1</title>
 
 <!-- PWA iOS -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -990,7 +990,7 @@
     <img src="Dalas.png" alt="Dalas Solutions" onerror="this.style.display='none'">
   </div>
   <div class="header-text">
-    <div class="header-label">HortiOrganic Solutions IT 1 — Gestión de Personal</div>
+    <div class="header-label">Planta PIL 1 — Gestión de Personal</div>
     <div class="header-title">Control Operacional Bavaria</div>
     <div class="header-sub">Preoperacionales, monitoreos y alcoholimetrías de la operación</div>
   </div>
@@ -1027,7 +1027,7 @@
         </div>
         <div class="field">
           <label class="field-label">Placa del vehículo <span class="req">*</span></label>
-          <input type="text" id="placa" placeholder="Escriba la placa" required>
+          <select id="placa" required><option value="">Seleccione la placa…</option></select>
         </div>
         <div class="field">
           <label class="field-label">Kilometraje actual <span class="req">*</span></label>
@@ -1035,7 +1035,7 @@
         </div>
         <div class="field">
           <label class="field-label">Nombre del conductor <span class="req">*</span></label>
-          <input type="text" placeholder="Nombre completo" id="conductor" required>
+          <select id="conductor" required><option value="">Seleccione el conductor…</option></select>
         </div>
       </div>
       <div class="field" style="margin-top:16px">
@@ -1162,7 +1162,7 @@
           </div>
           <div class="field">
             <label class="field-label">Conductor <span class="req">*</span></label>
-            <input type="text" id="mon-conductor" placeholder="Nombre completo">
+            <select id="mon-conductor"><option value="">Seleccione el conductor…</option></select>
           </div>
           <div class="field">
             <label class="field-label">Tipo de monitoreo <span class="req">*</span></label>
@@ -1226,7 +1226,7 @@
           </div>
           <div class="field">
             <label class="field-label">Conductor <span class="req">*</span></label>
-            <input type="text" id="alc-conductor" placeholder="Nombre completo">
+            <select id="alc-conductor"><option value="">Seleccione el conductor…</option></select>
           </div>
           <div class="field">
             <label class="field-label">Turno <span class="req">*</span></label>
@@ -1421,6 +1421,31 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3cf76Wz-GSF4VM6iBlsUTknnUMlhe93eYVlX8xtiqhe6eQtNXUubXcPYtAWRgpqKWIw/exec';
 const LOGIN_URL       = 'https://script.google.com/macros/s/AKfycby_aIQNO7QBYv8WR-ukTM4lJU2mq7029UgHW7YQ_DcQHGik4UqZPdEMQYvrl-kZmVZo/exec';
 let usuarioActual = '';
+
+// ── ROSTER: conductores y placas (edita aquí para agregar/quitar) ──
+const CONDUCTORES = [
+  'HERNANDO ALBERTO NIETO CASTILLO',
+  'JUAN CARLOS PACHON MOLINA',
+  'MIGUEL ANGEL BARRIOS MORA',
+  'JESUS ENRIQUE HERRERA CAMPOS',
+];
+const PLACAS = ['OAI509', 'SPM930', 'WOW100', 'WOW101', 'XGD873'];
+
+function poblarLista(id, valores) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  valores.forEach(function (v) {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+}
+function poblarListas() {
+  poblarLista('placa', PLACAS);
+  poblarLista('conductor', CONDUCTORES);
+  poblarLista('mon-conductor', CONDUCTORES);
+  poblarLista('alc-conductor', CONDUCTORES);
+}
 
 // ── LOGIN ───────────────────────────────────────────────────
 async function doLogin() {
@@ -2296,6 +2321,7 @@ async function generarPDFRegistro(modulo, row, btn) {
 }
 
 // ── INIT módulos nuevos ──────────────────────────────────────
+poblarListas();
 document.getElementById('mon-fecha').value = hoyLocal();
 document.getElementById('alc-fecha').value = hoyLocal();
 </script>
