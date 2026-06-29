@@ -922,6 +922,14 @@
 }
 .rep-pdf:hover{ background:var(--green-mid); }
 .rep-pdf:disabled{ opacity:.55; cursor:not-allowed; }
+
+/* ════════ FOTO GEOLOCALIZADA (preview) ════════ */
+.geo-wrap{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; margin-top:6px; }
+.geo-wrap > img{ width:220px; max-width:48%; border-radius:8px; border:1.5px solid var(--border); object-fit:cover; }
+.geo-map{ width:220px; max-width:48%; min-height:60px; display:flex; flex-direction:column; gap:4px; }
+.geo-map img{ width:100%; border-radius:8px; border:1.5px solid var(--border); }
+.geo-coords{ font-size:11px; color:var(--text-mid); font-weight:600; }
+.geo-loading{ font-size:11px; color:var(--text-light); align-self:center; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -1586,6 +1594,7 @@ async function submitForm() {
     observaciones: (document.getElementById('observaciones') ? document.getElementById('observaciones').value : ''),
     foto_vehiculo:      fotos.preopFoto.b64,
     foto_vehiculo_mime: fotos.preopFoto.mime,
+    ubicacion:          fotos.preopFoto.lat ? (fotos.preopFoto.lat + ',' + fotos.preopFoto.lng) : '',
     ...radioValues,
   };
 
@@ -1613,7 +1622,9 @@ async function submitForm() {
       filas.push(['Observaciones', payload.observaciones || '—']);
       const imagenes = [];
       if (fotos.preopFoto) imagenes.push({ titulo: 'Foto del vehículo',
-        dataURL: 'data:' + fotos.preopFoto.mime + ';base64,' + fotos.preopFoto.b64 });
+        dataURL: 'data:' + fotos.preopFoto.mime + ';base64,' + fotos.preopFoto.b64,
+        mapURL: fotos.preopFoto.mapURL,
+        coords: fotos.preopFoto.lat ? (fotos.preopFoto.lat.toFixed(6) + ', ' + fotos.preopFoto.lng.toFixed(6)) : '' });
       await exportarResumenPDF('Preoperacional', filas, imagenes);
     } catch (e) { console.warn('PDF:', e); }
 
@@ -1692,6 +1703,7 @@ async function submitMonitoreo() {
     if (fotos.monCertificado) {
       body.foto_certificado      = fotos.monCertificado.b64;
       body.foto_certificado_mime = fotos.monCertificado.mime;
+      if (fotos.monCertificado.lat) body.ubicacion = fotos.monCertificado.lat + ',' + fotos.monCertificado.lng;
     }
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
@@ -1712,7 +1724,9 @@ async function submitMonitoreo() {
       ];
       const imagenes = [];
       if (fotos.monCertificado) imagenes.push({ titulo: 'Certificado OutSafety',
-        dataURL: 'data:' + fotos.monCertificado.mime + ';base64,' + fotos.monCertificado.b64 });
+        dataURL: 'data:' + fotos.monCertificado.mime + ';base64,' + fotos.monCertificado.b64,
+        mapURL: fotos.monCertificado.mapURL,
+        coords: fotos.monCertificado.lat ? (fotos.monCertificado.lat.toFixed(6) + ', ' + fotos.monCertificado.lng.toFixed(6)) : '' });
       await exportarResumenPDF('Monitoreo OutSafety', filas, imagenes);
     } catch (e) { console.warn('PDF:', e); }
 
@@ -1741,11 +1755,80 @@ function onFotoGeneric(input, previewId, key) {
   const prev = document.getElementById(previewId);
   if (!file) { delete fotos[key]; if (prev) prev.innerHTML = ''; return; }
   const reader = new FileReader();
-  reader.onload = e => {
-    fotos[key] = { b64: e.target.result.split(',')[1], mime: file.type, name: file.name };
-    if (prev) prev.innerHTML = '<img src="' + e.target.result + '" alt="foto">';
+  reader.onload = async e => {
+    const dataURL = e.target.result;
+    fotos[key] = { b64: dataURL.split(',')[1], mime: file.type, name: file.name };
+    if (prev) {
+      prev.innerHTML =
+        '<div class="geo-wrap">' +
+          '<img src="' + dataURL + '" alt="foto">' +
+          '<div class="geo-map" id="' + previewId + '-map"><span class="geo-loading">Ubicando…</span></div>' +
+        '</div>';
+    }
+    // Geolocalización + mini-mapa
+    const loc = await obtenerUbicacion();
+    const mapDiv = document.getElementById(previewId + '-map');
+    if (loc) {
+      fotos[key].lat = loc.lat; fotos[key].lng = loc.lng;
+      const mapURL = await mapaStatico(loc.lat, loc.lng, 16, 320, 220);
+      fotos[key].mapURL = mapURL;
+      if (mapDiv) {
+        mapDiv.innerHTML = (mapURL ? '<img src="' + mapURL + '" alt="mapa">' : '') +
+          '<div class="geo-coords">' + loc.lat.toFixed(5) + ', ' + loc.lng.toFixed(5) + '</div>';
+      }
+    } else if (mapDiv) {
+      mapDiv.innerHTML = '<span class="geo-loading">Sin ubicación (permiso denegado o no disponible)</span>';
+    }
   };
   reader.readAsDataURL(file);
+}
+
+// ── Geolocalización ──────────────────────────────────────────
+function obtenerUbicacion() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      ()  => resolve(null),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  });
+}
+
+// ── Mapa estático (tiles OpenStreetMap sobre canvas, sin API key) ──
+async function mapaStatico(lat, lng, zoom, w, h) {
+  zoom = zoom || 16; w = w || 320; h = h || 220;
+  const TILE = 256;
+  const sin = Math.sin(lat * Math.PI / 180);
+  const scale = Math.pow(2, zoom) * TILE;
+  const px = (lng + 180) / 360 * scale;
+  const py = (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * scale;
+  const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#e8e4e0'; ctx.fillRect(0, 0, w, h);
+  const left = px - w / 2, top = py - h / 2;
+  const max = Math.pow(2, zoom);
+  const loads = [];
+  for (let tx = Math.floor(left / TILE); tx <= Math.floor((left + w) / TILE); tx++) {
+    for (let ty = Math.floor(top / TILE); ty <= Math.floor((top + h) / TILE); ty++) {
+      if (ty < 0 || ty >= max) continue;
+      const wx = ((tx % max) + max) % max;
+      const url = 'https://tile.openstreetmap.org/' + zoom + '/' + wx + '/' + ty + '.png';
+      loads.push(new Promise(resolve => {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        img.onload  = () => { try { ctx.drawImage(img, Math.round(tx * TILE - left), Math.round(ty * TILE - top)); } catch (e) {} resolve(); };
+        img.onerror = () => resolve();
+        img.src = url;
+      }));
+    }
+  }
+  await Promise.all(loads);
+  // Marcador
+  const cx = w / 2, cy = h / 2;
+  ctx.fillStyle = '#6e1423'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx - 7, cy - 9); ctx.lineTo(cx, cy + 4); ctx.lineTo(cx + 7, cy - 9); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy - 10, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  try { return canvas.toDataURL('image/jpeg', 0.85); } catch (e) { return ''; }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1789,6 +1872,9 @@ async function submitAlcohol() {
         foto_prueba_mime:    fotos.alcPrueba.mime,
         foto_consent:        fotos.alcConsent.b64,
         foto_consent_mime:   fotos.alcConsent.mime,
+        ubicacion: (fotos.alcResultado.lat ? (fotos.alcResultado.lat + ',' + fotos.alcResultado.lng)
+                  : fotos.alcPrueba.lat ? (fotos.alcPrueba.lat + ',' + fotos.alcPrueba.lng)
+                  : fotos.alcConsent.lat ? (fotos.alcConsent.lat + ',' + fotos.alcConsent.lng) : ''),
       }),
     });
 
@@ -1803,10 +1889,15 @@ async function submitAlcohol() {
         ['Resultado', resultado],
         ['Observaciones', obs || '—'],
       ];
+      const coordsAlc = fotos.alcResultado.lat ? (fotos.alcResultado.lat.toFixed(6) + ', ' + fotos.alcResultado.lng.toFixed(6)) :
+                        (fotos.alcPrueba.lat ? (fotos.alcPrueba.lat.toFixed(6) + ', ' + fotos.alcPrueba.lng.toFixed(6)) : '');
       const imagenes = [
-        { titulo: 'Foto del resultado',      dataURL: 'data:' + fotos.alcResultado.mime + ';base64,' + fotos.alcResultado.b64 },
-        { titulo: 'Foto haciendo la prueba', dataURL: 'data:' + fotos.alcPrueba.mime    + ';base64,' + fotos.alcPrueba.b64 },
-        { titulo: 'Consentimiento de la toma', dataURL: 'data:' + fotos.alcConsent.mime + ';base64,' + fotos.alcConsent.b64 },
+        { titulo: 'Foto del resultado',      dataURL: 'data:' + fotos.alcResultado.mime + ';base64,' + fotos.alcResultado.b64,
+          mapURL: fotos.alcResultado.mapURL, coords: fotos.alcResultado.lat ? (fotos.alcResultado.lat.toFixed(6) + ', ' + fotos.alcResultado.lng.toFixed(6)) : '' },
+        { titulo: 'Foto haciendo la prueba', dataURL: 'data:' + fotos.alcPrueba.mime    + ';base64,' + fotos.alcPrueba.b64,
+          mapURL: fotos.alcPrueba.mapURL, coords: fotos.alcPrueba.lat ? (fotos.alcPrueba.lat.toFixed(6) + ', ' + fotos.alcPrueba.lng.toFixed(6)) : '' },
+        { titulo: 'Consentimiento de la toma', dataURL: 'data:' + fotos.alcConsent.mime + ';base64,' + fotos.alcConsent.b64,
+          mapURL: fotos.alcConsent.mapURL, coords: fotos.alcConsent.lat ? (fotos.alcConsent.lat.toFixed(6) + ', ' + fotos.alcConsent.lng.toFixed(6)) : '' },
       ];
       await exportarResumenPDF('Alcoholimetria', filas, imagenes);
     } catch (e) { console.warn('PDF:', e); }
@@ -1998,18 +2089,53 @@ async function exportarResumenPDF(modulo, filas, imagenes) {
   }
   y += 4;
 
-  // Imágenes (fotos)
+  // Imágenes (foto + mapa geolocalizado al lado)
   for (const im of imagenes) {
-    if (!im || !im.dataURL) continue;
-    const dims = await imgDims(im.dataURL);
-    const maxW = W - M - M, maxH = 95;
-    let w = maxW, h = w * (dims.h / dims.w);
-    if (h > maxH) { h = maxH; w = h * (dims.w / dims.h); }
-    if (y + 6 + h > 285) { doc.addPage(); y = 15; }
+    if (!im || (!im.dataURL && !im.mapURL)) continue;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(70, 70, 70);
-    doc.text(im.titulo || 'Foto', M, y); y += 4;
-    try { doc.addImage(im.dataURL, dims.fmt, M, y, w, h); } catch (e) {}
-    y += h + 7;
+
+    if (im.dataURL && im.mapURL) {
+      // Foto a la izquierda, mapa a la derecha
+      const halfW = (W - M - M - 6) / 2, maxH = 70;
+      const d1 = await imgDims(im.dataURL);
+      let w1 = halfW, h1 = w1 * (d1.h / d1.w); if (h1 > maxH) { h1 = maxH; w1 = h1 * (d1.w / d1.h); }
+      const d2 = await imgDims(im.mapURL);
+      let w2 = halfW, h2 = w2 * (d2.h / d2.w); if (h2 > maxH) { h2 = maxH; w2 = h2 * (d2.w / d2.h); }
+      const rowH = Math.max(h1, h2);
+      if (y + 6 + rowH > 285) { doc.addPage(); y = 15; }
+      doc.text(im.titulo || 'Foto', M, y); y += 4;
+      try { doc.addImage(im.dataURL, d1.fmt, M, y, w1, h1); } catch (e) {}
+      try { doc.addImage(im.mapURL, 'JPEG', M + halfW + 6, y, w2, h2); } catch (e) {}
+      y += rowH + 3;
+      if (im.coords) {
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(110, 110, 110);
+        doc.text('Ubicación: ' + im.coords, M, y); y += 5;
+      }
+      y += 3;
+    } else if (im.dataURL) {
+      // Solo foto, ancho completo
+      const dims = await imgDims(im.dataURL);
+      const maxW = W - M - M, maxH = 95;
+      let w = maxW, h = w * (dims.h / dims.w);
+      if (h > maxH) { h = maxH; w = h * (dims.w / dims.h); }
+      if (y + 6 + h > 285) { doc.addPage(); y = 15; }
+      doc.text(im.titulo || 'Foto', M, y); y += 4;
+      try { doc.addImage(im.dataURL, dims.fmt, M, y, w, h); } catch (e) {}
+      y += h + 7;
+    } else {
+      // Solo mapa (reportes anteriores: ubicación del registro)
+      const d2 = await imgDims(im.mapURL);
+      const maxW = 110; let w = maxW, h = w * (d2.h / d2.w);
+      if (y + 6 + h > 285) { doc.addPage(); y = 15; }
+      doc.text(im.titulo || 'Ubicación', M, y); y += 4;
+      try { doc.addImage(im.mapURL, 'JPEG', M, y, w, h); } catch (e) {}
+      y += h + 3;
+      if (im.coords) {
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(110, 110, 110);
+        doc.text('Ubicación: ' + im.coords, M, y); y += 5;
+      }
+      y += 3;
+    }
   }
 
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
@@ -2063,7 +2189,18 @@ async function generarPDFRegistro(modulo, row, btn) {
     const res  = await fetch(APPS_SCRIPT_URL + '?action=getRegistro&modulo=' + modulo + '&row=' + row);
     const json = await res.json();
     if (json.ok) {
-      await exportarResumenPDF(json.titulo || 'Registro', json.filas || [], json.imagenes || []);
+      const imagenes = json.imagenes || [];
+      // Mapa de la ubicación guardada del registro
+      if (json.ubicacion) {
+        const partes = json.ubicacion.split(',');
+        const lat = parseFloat(partes[0]), lng = parseFloat(partes[1]);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const mapURL = await mapaStatico(lat, lng, 16, 320, 220);
+          if (mapURL) imagenes.push({ titulo: 'Ubicación del registro', mapURL: mapURL,
+            coords: lat.toFixed(6) + ', ' + lng.toFixed(6) });
+        }
+      }
+      await exportarResumenPDF(json.titulo || 'Registro', json.filas || [], imagenes);
     } else {
       toastMsg(json.error || 'No se pudo generar el PDF.', true);
     }
