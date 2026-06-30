@@ -904,6 +904,26 @@
 }
 .login-btn:hover{ opacity:.9; }
 .login-btn:disabled{ opacity:.55; cursor:not-allowed; }
+.login-link{
+  display:block; width:100%; margin-top:14px; background:none; border:none;
+  color:rgba(255,255,255,.8); font-family:'Barlow',sans-serif; font-size:12.5px;
+  text-decoration:underline; cursor:pointer;
+}
+.login-link:hover{ color:#fff; }
+
+/* ════════ MODAL CAMBIAR CONTRASEÑA ════════ */
+.pass-modal{
+  display:none; position:fixed; inset:0; z-index:10001;
+  background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:24px;
+}
+.pass-actions{ display:flex; gap:10px; margin-top:4px; }
+.pass-cancel, .pass-ok{
+  flex:1; padding:12px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:14px; letter-spacing:.06em; text-transform:uppercase; border:none; border-radius:9px; cursor:pointer;
+}
+.pass-ok{ background:#fff; color:var(--green-dark); }
+.pass-cancel{ background:rgba(255,255,255,.18); color:#fff; }
+.pass-ok:disabled{ opacity:.55; cursor:not-allowed; }
 
 /* ════════ FOOTER DE MARCAS (Horti / Dalas) ════════ */
 .brand-footer{
@@ -1008,6 +1028,36 @@
     </div>
     <div class="login-error" id="login-error"></div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Ingresar</button>
+    <button type="button" class="login-link" onclick="abrirCambioClave()">¿Cambiar contraseña?</button>
+  </div>
+</div>
+
+<!-- ════════ CAMBIAR CONTRASEÑA ════════ -->
+<div id="pass-modal" class="pass-modal">
+  <div class="login-card">
+    <div class="login-title">Cambiar contraseña</div>
+    <div class="login-sub">Verifica tu contraseña actual y define la nueva</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="pass-user" autocapitalize="off" placeholder="Usuario">
+    </div>
+    <div class="login-field">
+      <label>Contraseña actual</label>
+      <input type="password" id="pass-old" placeholder="Contraseña actual">
+    </div>
+    <div class="login-field">
+      <label>Contraseña nueva</label>
+      <input type="password" id="pass-new" placeholder="Nueva contraseña">
+    </div>
+    <div class="login-field">
+      <label>Confirmar nueva</label>
+      <input type="password" id="pass-new2" placeholder="Repite la nueva contraseña">
+    </div>
+    <div class="login-error" id="pass-error"></div>
+    <div class="pass-actions">
+      <button type="button" class="pass-cancel" onclick="cerrarCambioClave()">Cancelar</button>
+      <button type="button" class="pass-ok" id="pass-btn" onclick="cambiarClave()">Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -1521,6 +1571,50 @@ async function doLogin() {
     err.textContent = 'Error de conexión. Intente de nuevo.';
   }
   btn.disabled = false; btn.textContent = 'Ingresar';
+}
+
+// ── CAMBIAR CONTRASEÑA ───────────────────────────────────────
+function abrirCambioClave() {
+  const u = document.getElementById('login-user').value.trim();
+  if (u) document.getElementById('pass-user').value = u;
+  const err = document.getElementById('pass-error');
+  err.textContent = ''; err.style.color = '';
+  document.getElementById('pass-modal').style.display = 'flex';
+}
+function cerrarCambioClave() {
+  document.getElementById('pass-modal').style.display = 'none';
+  ['pass-old', 'pass-new', 'pass-new2'].forEach(id => { document.getElementById(id).value = ''; });
+}
+async function cambiarClave() {
+  const u      = document.getElementById('pass-user').value.trim();
+  const actual = document.getElementById('pass-old').value;
+  const nueva  = document.getElementById('pass-new').value;
+  const nueva2 = document.getElementById('pass-new2').value;
+  const err    = document.getElementById('pass-error');
+  err.style.color = ''; err.textContent = '';
+  if (!u || !actual || !nueva) { err.textContent = 'Complete todos los campos.'; return; }
+  if (nueva.length < 4) { err.textContent = 'La nueva contraseña debe tener al menos 4 caracteres.'; return; }
+  if (nueva !== nueva2) { err.textContent = 'Las contraseñas nuevas no coinciden.'; return; }
+  const btn = document.getElementById('pass-btn');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    const res = await fetch(LOGIN_URL + '?action=cambiarClave' +
+      '&usuario=' + encodeURIComponent(u) +
+      '&actual='  + encodeURIComponent(actual) +
+      '&nueva='   + encodeURIComponent(nueva));
+    const json = await res.json();
+    if (json && json.ok) {
+      err.style.color = '#9be8a8';
+      err.textContent = 'Contraseña actualizada correctamente.';
+      ['pass-old', 'pass-new', 'pass-new2'].forEach(id => { document.getElementById(id).value = ''; });
+      setTimeout(cerrarCambioClave, 1500);
+    } else {
+      err.textContent = (json && json.error) ? json.error : 'No se pudo cambiar la contraseña.';
+    }
+  } catch (e) {
+    err.textContent = 'Error de conexión. Intente de nuevo.';
+  }
+  btn.disabled = false; btn.textContent = 'Guardar';
 }
 
 // Fecha de HOY en formato yyyy-mm-dd usando la hora LOCAL (no UTC),
