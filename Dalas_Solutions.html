@@ -1081,6 +1081,7 @@
 
 <div class="tabs">
   <div class="tab active" data-tab="preop"       onclick="switchTab('preop')">Preoperacional</div>
+  <div class="tab"        data-tab="visual"       onclick="switchTab('visual')">Inspección visual</div>
   <div class="tab"        data-tab="monitoreos"  onclick="switchTab('monitoreos')">Monitoreos</div>
   <div class="tab"        data-tab="alcohol"     onclick="switchTab('alcohol')">Alcoholimetría</div>
   <div class="tab"        data-tab="indicadores" onclick="switchTab('indicadores')">Indicadores</div>
@@ -1235,6 +1236,71 @@
   </div>
 
   </div><!-- /panel-preop -->
+
+
+  <!-- ════════ PANEL: INSPECCIÓN VISUAL ════════ -->
+  <div class="tab-panel" id="panel-visual">
+    <div class="notice">
+      Inspección visual rápida del vehículo. Califica cada elemento (B = Bueno, R = Regular, M = Malo, N/A = No aplica).
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">1</div>
+        <div class="card-title">Datos del vehículo</div>
+      </div>
+      <div class="card-body">
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label">Fecha <span class="req">*</span></label>
+            <input type="date" id="vis-fecha">
+          </div>
+          <div class="field">
+            <label class="field-label">Placa del vehículo <span class="req">*</span></label>
+            <select id="vis-placa"><option value="">Seleccione la placa…</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label">Conductor <span class="req">*</span></label>
+            <select id="vis-conductor"><option value="">Seleccione el conductor…</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--good)"></div>Bueno</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--regular)"></div>Regular</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--bad)"></div>Malo</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--na)"></div>No Aplica</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">2</div>
+        <div class="card-title">Elementos a inspeccionar</div>
+      </div>
+      <div class="inspect-header"><span class="inspect-header-item">Elemento a Inspeccionar</span><span class="inspect-header-opts"><span class="ih-opt good-col">B</span><span class="ih-opt reg-col">R</span><span class="ih-opt mal-col">M</span><span class="ih-opt na-col">N/A</span></span></div>
+      <div id="visual-items"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">3</div>
+        <div class="card-title">Observaciones</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Observaciones generales</label>
+          <textarea id="vis-obs" rows="3" placeholder="Anote cualquier hallazgo relevante…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-area">
+      <button class="btn-reset" onclick="resetVisual()">Limpiar</button>
+      <button class="btn-submit" onclick="submitVisual()">Guardar Inspección visual</button>
+    </div>
+  </div><!-- /panel-visual -->
 
 
   <!-- ════════ PANEL: MONITOREOS OUTSAFETY ════════ -->
@@ -1402,7 +1468,16 @@
   <!-- ════════ PANEL: INDICADORES (FRANJAS DE CUMPLIMIENTO) ════════ -->
   <div class="tab-panel" id="panel-indicadores">
     <div class="notice">
-      Cumplimiento del día en tiempo real. Defina cuántos conductores están programados para que las metas diarias se calculen automáticamente.
+      Cumplimiento por día. Elige el día a consultar (por defecto hoy) y define cuántos conductores/vehículos están programados para calcular las metas.
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Día a consultar</label>
+          <input type="date" id="ind-fecha" onchange="cargarIndicadores()">
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -1482,6 +1557,7 @@
             <label class="field-label">Módulo</label>
             <select id="rep-modulo" onchange="cargarRegistros()">
               <option value="preop">Preoperacional</option>
+              <option value="visual">Inspección visual</option>
               <option value="monitoreo">Monitoreo OutSafety</option>
               <option value="alcohol">Alcoholimetría</option>
             </select>
@@ -1543,6 +1619,8 @@ function poblarListas() {
   poblarLista('conductor', CONDUCTORES);
   poblarLista('mon-conductor', CONDUCTORES);
   poblarLista('alc-conductor', CONDUCTORES);
+  poblarLista('vis-placa', PLACAS);
+  poblarLista('vis-conductor', CONDUCTORES);
 }
 
 // ── LOGIN ───────────────────────────────────────────────────
@@ -1680,6 +1758,25 @@ const opts = [
   { cls:'opt-na',      val:'no_aplica', label:'N/A' }
 ];
 
+// Ítems de la Inspección visual
+const inspeccionVisual = [
+  { key: 'V1 - Carrocería sin daños visibles',              desc: 'Carrocería sin daños visibles' },
+  { key: 'V2 - Parabrisas y vidrios sin fisuras',           desc: 'Parabrisas y vidrios sin fisuras' },
+  { key: 'V3 - Espejos retrovisores completos',             desc: 'Espejos retrovisores completos' },
+  { key: 'V4 - Luces, direccionales y stop funcionando',    desc: 'Luces, direccionales y stop funcionando' },
+  { key: 'V5 - Llantas sin desgaste o daños visibles',      desc: 'Llantas sin desgaste o daños visibles' },
+  { key: 'V6 - Tuercas de las ruedas completas y visibles', desc: 'Tuercas de las ruedas completas y visibles' },
+  { key: 'V7 - Fugas visibles debajo del vehículo',         desc: 'Fugas visibles debajo del vehículo' },
+  { key: 'V8 - Partes sueltas o desprendidas',              desc: 'Partes sueltas o desprendidas' },
+  { key: 'V9 - Placas en buen estado y legibles',           desc: 'Placas en buen estado y legibles' },
+  { key: 'V10 - Limpiabrisas en buen estado',               desc: 'Limpiabrisas en buen estado' },
+  { key: 'V11 - Cinturón de seguridad en buen estado',      desc: 'Cinturón de seguridad en buen estado' },
+  { key: 'V12 - Extintor vigente y asegurado',              desc: 'Extintor vigente y asegurado' },
+  { key: 'V13 - Botiquín completo',                         desc: 'Botiquín completo' },
+  { key: 'V14 - Kit de carretera completo',                 desc: 'Kit de carretera completo' },
+  { key: 'V15 - Documentación disponible',                  desc: 'Documentación disponible' },
+];
+
 
 // ── CONSTRUIR FILAS ──────────────────────────────────────────
 function buildItems(containerId, itemList) {
@@ -1705,12 +1802,82 @@ function buildItems(containerId, itemList) {
   });
 }
 
+// ════════════════════════════════════════════════════════════
+//  INSPECCIÓN VISUAL
+// ════════════════════════════════════════════════════════════
+function resetVisual() {
+  if (!confirm('¿Limpiar la inspección visual?')) return;
+  inspeccionVisual.forEach(it => {
+    document.querySelectorAll('input[name="' + it.key + '"]').forEach(r => r.checked = false);
+  });
+  document.getElementById('vis-placa').value = '';
+  document.getElementById('vis-conductor').value = '';
+  document.getElementById('vis-obs').value = '';
+  document.getElementById('vis-fecha').value = hoyLocal();
+}
+
+async function submitVisual() {
+  const fecha     = document.getElementById('vis-fecha').value;
+  const placa     = document.getElementById('vis-placa').value;
+  const conductor = document.getElementById('vis-conductor').value;
+  const obs       = document.getElementById('vis-obs').value.trim();
+
+  if (!fecha || !placa || !conductor) {
+    toastMsg('Complete fecha, placa y conductor.', true);
+    return;
+  }
+  // Recoger solo las respuestas de los ítems visuales
+  const respuestas = {};
+  let sinResponder = 0;
+  inspeccionVisual.forEach(it => {
+    const sel = document.querySelector('input[name="' + it.key + '"]:checked');
+    respuestas[it.key] = sel ? sel.value : '';
+    if (!sel) sinResponder++;
+  });
+  if (sinResponder > 0) {
+    toastMsg('Faltan ' + sinResponder + ' ítem(s) por calificar.', true);
+    return;
+  }
+
+  const payload = { tipo: 'visual', fecha, placa, conductor, observaciones: obs, ...respuestas };
+  const btn = document.querySelector('#panel-visual .btn-submit');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    // PDF resumen
+    try {
+      const filas = [ ['Fecha', fecha], ['Placa', placa], ['Conductor', conductor] ];
+      inspeccionVisual.forEach(it => filas.push([it.desc, ESTADO_TXT[respuestas[it.key]] || respuestas[it.key]]));
+      filas.push(['Observaciones', obs || '—']);
+      await exportarResumenPDF('Inspeccion visual', filas, []);
+    } catch (e) { console.warn('PDF:', e); }
+
+    inspeccionVisual.forEach(it => {
+      document.querySelectorAll('input[name="' + it.key + '"]').forEach(r => r.checked = false);
+    });
+    document.getElementById('vis-placa').value = '';
+    document.getElementById('vis-conductor').value = '';
+    document.getElementById('vis-obs').value = '';
+    document.getElementById('vis-fecha').value = hoyLocal();
+    toastMsg('Inspección visual registrada correctamente.');
+  } catch {
+    toastMsg('Error al enviar. Verifique su conexión.', true);
+  }
+  btn.disabled = false; btn.textContent = 'Guardar Inspección visual';
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 document.getElementById('fecha').value = hoyLocal();
 buildItems('luces-items',    inspeccionItems.luces);
 buildItems('cabina-items',   inspeccionItems.cabina);
 buildItems('llantas-items',  inspeccionItems.llantas);
 buildItems('mecanico-items', inspeccionItems.mecanico);
+buildItems('visual-items',   inspeccionVisual);
 
 // ── RESET ────────────────────────────────────────────────────
 function resetForm() {
@@ -2188,7 +2355,9 @@ async function cargarIndicadores() {
   const cont = document.getElementById('kpi-container');
   cont.innerHTML = '<div class="kpi-loading">Cargando indicadores…</div>';
   try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getIndicadores');
+    const fEl  = document.getElementById('ind-fecha');
+    const fecha = (fEl && fEl.value) ? fEl.value : hoyLocal();
+    const res  = await fetch(APPS_SCRIPT_URL + '?action=getIndicadores&fecha=' + encodeURIComponent(fecha));
     const json = await res.json();
     if (json.ok) { indicadoresData = json; recalcularIndicadores(); ultimaActualizacion = new Date(); tickReloj(); }
     else cont.innerHTML = '<div class="kpi-loading">No se pudieron cargar los indicadores.</div>';
@@ -2485,6 +2654,8 @@ setInterval(tickReloj, 1000);
 tickReloj();
 
 poblarListas();
+document.getElementById('ind-fecha').value = hoyLocal();
+document.getElementById('vis-fecha').value = hoyLocal();
 document.getElementById('mon-fecha').value = hoyLocal();
 document.getElementById('alc-fecha').value = hoyLocal();
 </script>
