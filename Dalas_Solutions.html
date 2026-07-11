@@ -2428,6 +2428,8 @@ function recalcularIndicadores() {
 
   let html = '';
   html += kpiPreop(d.preop.antes9, d.preop.total, vehiculos);
+  html += kpiCard('Inspección visual', d.visual.total, vehiculos,
+                  'Meta = vehículos programados (' + vehiculos + ')');
   html += kpiCard('Monitoreo diario OutSafety', d.monitoreo.diario, conductores,
                   'Meta = conductores programados (' + conductores + ')');
   html += kpiCard('Monitoreo semanal OutSafety', d.monitoreo.semanal, semana, 'Esta semana (L–V)');
