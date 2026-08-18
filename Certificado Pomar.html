@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#131C3D">
+<title>Pomar Horti · Certificados de Viaje</title>
+<link rel="icon" href="PomarHorti.png">
+<script>function logoFallback(img){img.style.display="none";var f=document.getElementById("logoFb");if(f)f.style.display="grid";}</script>
+<style>
+:root{
+  --navy:#131C3D;
+  --navy-2:#1B2650;
+  --navy-3:#243066;
+  --blue:#2A50A0;
+  --blue-2:#3A6BD0;
+  --blue-soft:#7FA8F5;
+  --red:#D02128;
+  --red-2:#F0454C;
+  --green:#1E9B5E;
+  --amber:#E8A33D;
+  --txt:#FFFFFF;
+  --txt-2:rgba(255,255,255,.68);
+  --txt-3:rgba(255,255,255,.42);
+  --line:rgba(255,255,255,.12);
+  --r:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:var(--navy);
+  color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:15px;line-height:1.45;
+  overscroll-behavior-y:none;
+}
+img{max-width:100%;display:block}
+button{font-family:inherit}
+
+/* ---------- estructura ---------- */
+#app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.screen{display:none;flex:1;flex-direction:column;padding:18px 18px 34px}
+.screen.on{display:flex}
+
+.topbar{
+  position:sticky;top:0;z-index:20;background:rgba(19,28,61,.94);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  padding-top:calc(12px + env(safe-area-inset-top));
+}
+.topbar .logo{height:34px;width:auto}
+.topbar h2{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
+.topbar .sub{font-size:11px;color:var(--txt-3);margin:0}
+.topbar .grow{flex:1}
+
+.iconbtn{background:transparent;border:1px solid var(--line);color:var(--txt);
+  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;cursor:pointer;font-size:16px}
+.iconbtn:active{background:rgba(255,255,255,.08)}
+
+/* ---------- marca ---------- */
+.brand{display:flex;flex-direction:column;align-items:center;gap:6px;margin:26px 0 8px}
+.brand img{width:160px;height:160px;object-fit:contain;border-radius:26px;background:var(--navy);
+  box-shadow:0 14px 44px rgba(0,0,0,.5)}
+.brand .fb{width:160px;height:160px;border-radius:26px;background:var(--navy-2);display:none;
+  place-items:center;font-size:44px;font-weight:800;color:var(--blue-2);letter-spacing:-2px}
+.brand h1{font-size:23px;margin:14px 0 0;font-weight:800;letter-spacing:.3px}
+.brand p{margin:2px 0 0;color:var(--txt-3);font-size:12.5px;text-transform:uppercase;letter-spacing:2.2px}
+.swoosh{width:118px;height:6px;background:linear-gradient(90deg,var(--red),var(--red-2));border-radius:6px;margin-top:12px}
+
+/* ---------- tarjetas / formularios ---------- */
+.card{background:var(--navy-2);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card.tap{cursor:pointer}
+.card.tap:active{transform:scale(.985);background:var(--navy-3)}
+.card h3{margin:0 0 4px;font-size:15.5px}
+.card p{margin:0;color:var(--txt-2);font-size:12.8px}
+
+label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt-3);margin:14px 0 7px;font-weight:700}
+input,select,textarea{
+  width:100%;padding:14px 15px;border-radius:13px;border:1px solid var(--line);
+  background:var(--navy-2);color:var(--txt);font-size:16px;outline:none;
+}
+input:focus,select,textarea:focus{border-color:var(--blue-2);background:var(--navy-3)}
+input::placeholder{color:var(--txt-3)}
+textarea{min-height:74px;resize:vertical;font-family:inherit}
+
+.btn{
+  width:100%;padding:15px;border-radius:13px;border:0;font-size:15.5px;font-weight:700;
+  cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:9px;
+  background:var(--blue);color:#fff;transition:transform .06s,filter .15s;
+}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.red{background:var(--red)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+.btn.green{background:var(--green)}
+.btn.sm{padding:11px;font-size:13.5px;margin-top:8px}
+
+.link{background:none;border:0;color:var(--blue-soft);font-size:13.5px;padding:12px;width:100%;cursor:pointer;text-decoration:underline}
+
+.msg{padding:12px 14px;border-radius:12px;font-size:13.2px;margin-top:14px;display:none;line-height:1.4}
+.msg.on{display:block}
+.msg.err{background:rgba(208,33,40,.16);border:1px solid rgba(208,33,40,.5);color:#FFC4C6}
+.msg.ok{background:rgba(30,155,94,.16);border:1px solid rgba(30,155,94,.5);color:#B7F0D2}
+.msg.warn{background:rgba(232,163,61,.15);border:1px solid rgba(232,163,61,.5);color:#FFDFB0}
+
+/* ---------- pasos del viaje ---------- */
+.step{background:var(--navy-2);border:1px solid var(--line);border-radius:var(--r);padding:15px;margin-bottom:13px}
+.step.done{border-color:rgba(30,155,94,.55)}
+.step-h{display:flex;align-items:center;gap:11px}
+.step-n{width:31px;height:31px;border-radius:10px;background:var(--navy-3);display:grid;place-items:center;
+  font-weight:800;font-size:13.5px;flex:0 0 31px;color:var(--txt-2)}
+.step.done .step-n{background:var(--green);color:#fff}
+.step-t{flex:1}
+.step-t b{display:block;font-size:14.5px}
+.step-t span{font-size:11.8px;color:var(--txt-3)}
+.thumb{margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--line);position:relative}
+.thumb img{width:100%;height:170px;object-fit:cover}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.meta div{background:var(--navy);border-radius:10px;padding:9px 11px}
+.meta small{display:block;color:var(--txt-3);font-size:10px;text-transform:uppercase;letter-spacing:.8px}
+.meta b{font-size:12.8px;font-weight:600;word-break:break-word}
+.minimap{width:100%;height:118px;border-radius:11px;margin-top:9px;border:1px solid var(--line);background:var(--navy-3)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:10.5px;
+  font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.pill.ok{background:rgba(30,155,94,.2);color:#8FE7BC}
+.pill.curso{background:rgba(232,163,61,.2);color:#FFD79A}
+.pill.pend{background:rgba(208,33,40,.2);color:#FFB0B3}
+
+/* ---------- lista historico ---------- */
+.row{display:flex;align-items:center;gap:12px;background:var(--navy-2);border:1px solid var(--line);
+  border-radius:14px;padding:13px;margin-bottom:10px;cursor:pointer}
+.row:active{background:var(--navy-3)}
+.row .ic{width:42px;height:42px;border-radius:12px;background:var(--navy-3);display:grid;place-items:center;font-size:17px;flex:0 0 42px}
+.row .info{flex:1;min-width:0}
+.row .info b{display:block;font-size:14px}
+.row .info span{font-size:11.6px;color:var(--txt-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .chev{color:var(--txt-3);font-size:18px}
+
+.empty{text-align:center;padding:48px 20px;color:var(--txt-3)}
+.empty .big{font-size:42px;margin-bottom:10px}
+
+/* ---------- credenciales ---------- */
+.cred{background:linear-gradient(150deg,var(--blue) 0%,var(--navy-3) 100%);border-radius:var(--r);padding:20px;text-align:center;border:1px solid rgba(255,255,255,.16)}
+.cred small{display:block;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.cred .val{font-size:26px;font-weight:800;letter-spacing:1px;margin:5px 0 16px;font-family:ui-monospace,Menlo,Consolas,monospace}
+
+/* ---------- camara ---------- */
+.cam{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column}
+.cam.on{display:flex}
+.cam video{flex:1;width:100%;object-fit:cover;background:#000}
+.cam .camtop{position:absolute;top:0;left:0;right:0;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;
+  background:linear-gradient(180deg,rgba(0,0,0,.8),transparent);display:flex;align-items:center;gap:12px;z-index:2}
+.cam .camtop b{font-size:14.5px}
+.cam .camtop .x{margin-left:auto;background:rgba(0,0,0,.5);border:0;color:#fff;width:36px;height:36px;border-radius:50%;font-size:17px;cursor:pointer}
+.gpsbar{position:absolute;bottom:132px;left:16px;right:16px;background:rgba(0,0,0,.66);backdrop-filter:blur(8px);
+  border-radius:13px;padding:11px 14px;font-size:12.3px;display:flex;align-items:center;gap:10px;z-index:2;line-height:1.35}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex:0 0 9px;animation:pulse 1.2s infinite}
+.dot.ok{background:var(--green);animation:none}
+.dot.bad{background:var(--red-2);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.camfoot{position:absolute;bottom:0;left:0;right:0;height:130px;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent);
+  display:flex;align-items:center;justify-content:center;z-index:2;padding-bottom:env(safe-area-inset-bottom)}
+.shutter{width:74px;height:74px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35);cursor:pointer}
+.shutter:disabled{opacity:.35}
+.camerr{position:absolute;inset:0;display:none;place-items:center;padding:30px;text-align:center;z-index:3;background:#000}
+.camerr.on{display:grid}
+
+/* ---------- certificado ---------- */
+.certwrap{background:#fff;border-radius:14px;overflow:hidden;margin-top:6px}
+#certCanvas,#certImg{width:100%;display:block}
+
+/* ---------- overlay ---------- */
+.ov{position:fixed;inset:0;background:rgba(10,15,35,.86);backdrop-filter:blur(4px);z-index:200;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px;text-align:center}
+.ov.on{display:flex}
+.spin{width:44px;height:44px;border:3.5px solid rgba(255,255,255,.18);border-top-color:var(--blue-2);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.net{position:fixed;top:0;left:0;right:0;background:var(--red);color:#fff;font-size:12.3px;font-weight:700;
+  padding:7px 14px;text-align:center;z-index:300;display:none}
+.net.on{display:block}
+.net.sync{background:var(--amber);color:#3A2600}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;background:var(--navy-3);
+  border:1px solid var(--line);color:#fff;padding:12px 18px;border-radius:13px;font-size:13.2px;z-index:400;
+  opacity:0;pointer-events:none;transition:opacity .25s;max-width:86%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.toast.on{opacity:1}
+
+.tiny{font-size:11.5px;color:var(--txt-3);text-align:center;margin-top:16px;line-height:1.5}
+.sechead{font-size:11.5px;text-transform:uppercase;letter-spacing:1.6px;color:var(--txt-3);font-weight:800;margin:20px 0 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2 .btn{margin-top:0}
+</style>
+</head>
+<body>
+
+<div class="net" id="net"></div>
+
+<div id="app">
+
+  <!-- ============ BIENVENIDA ============ -->
+  <section class="screen on" id="scBienvenida">
+    <div class="brand">
+      <img src="PomarHorti.png" alt="Pomar 1953" id="logoBrand" onerror="logoFallback(this)">
+      <div class="fb" id="logoFb">P</div>
+      <div class="swoosh"></div>
+      <h1>Certificados de Viaje</h1>
+      <p>Pomar · Horti</p>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn" onclick="ir('scLogin')">Ingresar al sistema</button>
+    <button class="btn ghost" onclick="ir('scRegistro')">Crear usuario nuevo</button>
+    <p class="tiny">Trazabilidad de entrada y salida con evidencia fotográfica georreferenciada.</p>
+  </section>
+
+  <!-- ============ REGISTRO ============ -->
+  <section class="screen" id="scRegistro">
+    <div class="topbar" style="margin:-18px -18px 18px">
+      <button class="iconbtn" onclick="ir('scBienvenida')">←</button>
+      <div><h2>Crear usuario</h2><p class="sub">Registro de conductor</p></div>
+    </div>
+    <div id="regForm">
+      <label>Nombre completo del conductor</label>
+      <input id="regNombre" type="text" autocomplete="name" placeholder="Ej: Juan Carlos Pérez">
+      <label>Contraseña que desea usar</label>
+      <input id="regPass" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+      <label>Confirmar contraseña</label>
+      <input id="regPass2" type="password" autocomplete="new-password" placeholder="Repita la contraseña">
+      <div class="msg err" id="regMsg"></div>
+      <button class="btn" id="regBtn" onclick="doRegistro()">Crear usuario</button>
+      <button class="link" onclick="ir('scLogin')">Ya tengo usuario, ingresar</button>
+      <p class="tiny">El nombre de usuario lo genera el sistema automáticamente.<br>La contraseña la define usted.</p>
+    </div>
+
+    <div id="regResultado" style="display:none">
+      <div class="msg ok on" style="margin-top:0">Usuario creado correctamente. Guarde estos datos.</div>
+      <div class="cred" style="margin-top:14px">
+        <small>Su usuario asignado</small>
+        <div class="val" id="outUsuario">—</div>
+        <small>Su contraseña</small>
+        <div class="val" id="outPass" style="margin-bottom:4px">—</div>
+      </div>
+      <button class="btn ghost" onclick="copiarCred()">Copiar credenciales</button>
+      <button class="btn" onclick="irLoginConDatos()">Continuar e ingresar</button>
+      <p class="tiny">Anote su usuario. Lo necesitará cada vez que ingrese.</p>
+    </div>
+  </section>
+
+  <!-- ============ LOGIN ============ -->
+  <section class="screen" id="scLogin">
+    <div class="topbar" style="margin:-18px -18px 18px">
+      <button class="iconbtn" onclick="ir('scBienvenida')">←</button>
+      <div><h2>Ingresar</h2><p class="sub">Pomar Horti</p></div>
+    </div>
+    <div class="brand" style="margin:6px 0 14px">
+      <img src="PomarHorti.png" alt="" style="width:104px;height:104px" onerror="this.style.display='none'">
+    </div>
+    <label>Usuario</label>
+    <input id="logUsuario" type="text" autocapitalize="none" autocomplete="username" placeholder="Ej: jperez">
+    <label>Contraseña</label>
+    <input id="logPass" type="password" autocomplete="current-password" placeholder="Su contraseña">
+    <div class="msg err" id="logMsg"></div>
+    <button class="btn" id="logBtn" onclick="doLogin()">Ingresar</button>
+    <button class="link" onclick="ir('scRegistro')">No tengo usuario, crear uno</button>
+  </section>
+
+  <!-- ============ MENÚ PRINCIPAL ============ -->
+  <section class="screen" id="scHome" style="padding-top:0">
+    <div class="topbar" style="margin:0 -18px 18px">
+      <img src="PomarHorti.png" class="logo" alt="" onerror="this.style.display='none'">
+      <div class="grow"><h2 id="homeNombre">—</h2><p class="sub" id="homeRol">—</p></div>
+      <button class="iconbtn" onclick="doSalir()" title="Cerrar sesión">⎋</button>
+    </div>
+
+    <div class="msg warn" id="homeReanudar" style="margin-top:0">
+      <b>Viaje sin terminar.</b><br><span id="homeReanudarTxt"></span>
+      <button class="btn sm" onclick="reanudarViaje()">Retomar viaje</button>
+    </div>
+
+    <div class="sechead">Acciones rápidas</div>
+
+    <div class="card tap" onclick="nuevoViaje()">
+      <div style="display:flex;align-items:center;gap:13px">
+        <div class="row-ic" style="width:46px;height:46px;border-radius:13px;background:var(--red);display:grid;place-items:center;font-size:20px">▶</div>
+        <div style="flex:1"><h3>Nuevo viaje</h3><p>Registrar entrada, salida, placa y peso</p></div>
+        <div style="color:var(--txt-3)">›</div>
+      </div>
+    </div>
+
+    <div class="card tap" onclick="abrirHistorico()">
+      <div style="display:flex;align-items:center;gap:13px">
+        <div style="width:46px;height:46px;border-radius:13px;background:var(--blue);display:grid;place-items:center;font-size:20px">☰</div>
+        <div style="flex:1"><h3>Consulta de viajes</h3><p id="homeHistTxt">Histórico de mis viajes certificados</p></div>
+        <div style="color:var(--txt-3)">›</div>
+      </div>
+    </div>
+
+    <div class="card tap" id="cardAdmin" style="display:none" onclick="abrirAdmin()">
+      <div style="display:flex;align-items:center;gap:13px">
+        <div style="width:46px;height:46px;border-radius:13px;background:var(--navy-3);display:grid;place-items:center;font-size:20px">⚙</div>
+        <div style="flex:1"><h3>Panel administrador</h3><p>Todos los registros y descargas</p></div>
+        <div style="color:var(--txt-3)">›</div>
+      </div>
+    </div>
+
+    <div class="sechead">Estado</div>
+    <div class="card" style="margin-bottom:0">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><p style="font-size:12px">Conexión</p><b id="estConn" style="font-size:14.5px">—</b></div>
+        <div style="text-align:right"><p style="font-size:12px">Pendientes por sincronizar</p><b id="estCola" style="font-size:14.5px">0</b></div>
+      </div>
+      <button class="btn ghost sm" onclick="sincronizarAhora()">Sincronizar ahora</button>
+    </div>
+    <p class="tiny">Cada evidencia se guarda apenas se captura.<br>Si se cae el internet, el viaje continúa y se sincroniza solo.</p>
+  </section>
+
+  <!-- ============ VIAJE ============ -->
+  <section class="screen" id="scViaje" style="padding-top:0">
+    <div class="topbar" style="margin:0 -18px 18px">
+      <button class="iconbtn" onclick="salirDeViaje()">←</button>
+      <div class="grow"><h2>Registro de viaje</h2><p class="sub" id="viajeId">—</p></div>
+      <span class="pill curso" id="viajeEstado">En curso</span>
+    </div>
+
+    <!-- Paso 1 entrada -->
+    <div class="step" id="stEntrada">
+      <div class="step-h">
+        <div class="step-n">1</div>
+        <div class="step-t"><b>Hora de entrada</b><span>Foto obligatoria tomada en el momento</span></div>
+      </div>
+      <div id="entraCont"></div>
+      <button class="btn red sm" id="btnEntrada" onclick="capturar('entrada')">📷 Tomar foto de entrada</button>
+    </div>
+
+    <!-- Paso 2 salida -->
+    <div class="step" id="stSalida">
+      <div class="step-h">
+        <div class="step-n">2</div>
+        <div class="step-t"><b>Hora de salida</b><span>Foto obligatoria tomada en el momento</span></div>
+      </div>
+      <div id="salidaCont"></div>
+      <button class="btn red sm" id="btnSalida" onclick="capturar('salida')">📷 Tomar foto de salida</button>
+    </div>
+
+    <!-- Paso 3 datos -->
+    <div class="step" id="stDatos">
+      <div class="step-h">
+        <div class="step-n">3</div>
+        <div class="step-t"><b>Placa y peso neto</b><span>Datos de báscula</span></div>
+      </div>
+      <label>Placa del vehículo</label>
+      <input id="inPlaca" type="text" placeholder="ABC123" maxlength="10"
+             style="text-transform:uppercase;letter-spacing:2px;font-weight:700"
+             oninput="marcarDatos()" onblur="guardarDatos()">
+      <label>Peso neto de báscula (kg)</label>
+      <input id="inPeso" type="number" inputmode="decimal" placeholder="0" min="0" step="0.01"
+             oninput="marcarDatos()" onblur="guardarDatos()">
+      <label>Observaciones (opcional)</label>
+      <textarea id="inObs" placeholder="Notas del viaje" oninput="marcarDatos()" onblur="guardarDatos()"></textarea>
+    </div>
+
+    <div class="msg err" id="viajeMsg"></div>
+    <button class="btn green" id="btnCompletar" onclick="completar()">Completar y generar certificado</button>
+    <p class="tiny">El certificado incluye ambas fotos, la georreferenciación y un código QR de verificación.</p>
+  </section>
+
+  <!-- ============ CERTIFICADO ============ -->
+  <section class="screen" id="scCert" style="padding-top:0">
+    <div class="topbar" style="margin:0 -18px 18px">
+      <button class="iconbtn" onclick="volverHome()">←</button>
+      <div class="grow"><h2>Certificado de viaje</h2><p class="sub" id="certId">—</p></div>
+    </div>
+    <div class="msg ok on" id="certMsg" style="margin-top:0">Certificado generado.</div>
+    <div class="certwrap"><canvas id="certCanvas"></canvas></div>
+    <button class="btn" onclick="descargarCert()">⬇ Descargar certificado</button>
+    <button class="btn ghost" onclick="compartirCert()">Compartir</button>
+    <button class="btn ghost" onclick="volverHome()">Volver al menú</button>
+    <p class="tiny" id="certVerif">—</p>
+  </section>
+
+  <!-- ============ HISTÓRICO ============ -->
+  <section class="screen" id="scHist" style="padding-top:0">
+    <div class="topbar" style="margin:0 -18px 14px">
+      <button class="iconbtn" onclick="volverHome()">←</button>
+      <div class="grow"><h2 id="histTitulo">Consulta de viajes</h2><p class="sub" id="histSub">—</p></div>
+      <button class="iconbtn" onclick="abrirHistorico(true)">⟳</button>
+    </div>
+    <input id="histBuscar" type="search" placeholder="Buscar por placa, viaje o conductor" oninput="filtrarHist()">
+    <div id="adminTools" style="display:none">
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn ghost sm" onclick="descargarCSV()">⬇ Exportar CSV</button>
+        <button class="btn ghost sm" onclick="verUsuarios()">👤 Usuarios</button>
+      </div>
+    </div>
+    <div id="histLista" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ============ DETALLE ============ -->
+  <section class="screen" id="scDetalle" style="padding-top:0">
+    <div class="topbar" style="margin:0 -18px 18px">
+      <button class="iconbtn" onclick="ir('scHist')">←</button>
+      <div class="grow"><h2>Detalle del viaje</h2><p class="sub" id="detId">—</p></div>
+    </div>
+    <div id="detCont"></div>
+  </section>
+
+</div>
+
+<!-- ============ CÁMARA ============ -->
+<div class="cam" id="cam">
+  <div class="camtop">
+    <b id="camTitulo">Foto</b>
+    <button class="x" onclick="cerrarCamara()">✕</button>
+  </div>
+  <video id="camVideo" playsinline autoplay muted></video>
+  <div class="gpsbar"><span class="dot" id="gpsDot"></span><span id="gpsTxt">Obteniendo ubicación GPS…</span></div>
+  <div class="camfoot"><button class="shutter" id="camShutter" disabled onclick="dispararFoto()"></button></div>
+  <div class="camerr" id="camErr">
+    <div>
+      <div style="font-size:44px;margin-bottom:14px">📷</div>
+      <h3 id="camErrT" style="margin:0 0 8px">No se pudo abrir la cámara</h3>
+      <p id="camErrM" style="color:var(--txt-2);font-size:13.5px;margin:0 0 20px"></p>
+      <button class="btn" onclick="reintentarCamara()">Reintentar</button>
+      <button class="btn ghost" onclick="cerrarCamara()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ OVERLAY ============ -->
+<div class="ov" id="ov"><div class="spin"></div><div id="ovTxt">Procesando…</div></div>
+<div class="toast" id="toast"></div>
+
+<canvas id="workCanvas" style="display:none"></canvas>
+
+<script>
+/* ---- Generador QR autocontenido (sin CDN): modo byte, nivel M, v1-v12 ---- */
+/* Codificador QR autocontenido - modo byte, nivel de correccion M, versiones 1..12 */
+function PomarQR(texto){
+  // [totalCodewords, ecPorBloque, [ [nBloques, dataPorBloque], ... ]]
+  var TAB = {
+    1:[26,10,[[1,16]]],
+    2:[44,16,[[1,28]]],
+    3:[70,26,[[1,44]]],
+    4:[100,18,[[2,32]]],
+    5:[134,24,[[2,43]]],
+    6:[172,16,[[4,27]]],
+    7:[196,18,[[4,31]]],
+    8:[242,22,[[2,38],[2,39]]],
+    9:[292,22,[[3,36],[2,37]]],
+    10:[346,26,[[4,43],[1,44]]],
+    11:[404,30,[[1,50],[4,51]]],
+    12:[466,22,[[6,36],[2,37]]]
+  };
+  var ALIN = {1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],
+              8:[6,24,42],9:[6,26,46],10:[6,28,50],11:[6,30,54],12:[6,32,58]};
+
+  /* ---- utf8 ---- */
+  var bytes = [];
+  if (typeof TextEncoder !== 'undefined'){
+    bytes = Array.prototype.slice.call(new TextEncoder().encode(String(texto)));
+  } else {
+    var enc = unescape(encodeURIComponent(String(texto)));
+    for (var i=0;i<enc.length;i++) bytes.push(enc.charCodeAt(i) & 0xff);
+  }
+
+  /* ---- elegir version ---- */
+  var ver = 0;
+  for (var v=1; v<=12; v++){
+    var dcw = 0;
+    TAB[v][2].forEach(function(g){ dcw += g[0]*g[1]; });
+    var cuenta = (v < 10) ? 8 : 16;
+    if (bytes.length*8 + 4 + cuenta <= dcw*8){ ver = v; break; }
+  }
+  if (!ver) throw new Error('Texto demasiado largo para QR');
+
+  var total = TAB[ver][0], ecLen = TAB[ver][1], grupos = TAB[ver][2];
+  var dataCW = 0; grupos.forEach(function(g){ dataCW += g[0]*g[1]; });
+  var bitsCuenta = (ver < 10) ? 8 : 16;
+
+  /* ---- bitstream ---- */
+  var bits = [];
+  function push(val, n){ for (var k=n-1;k>=0;k--) bits.push((val>>>k)&1); }
+  push(4,4);                       // modo byte
+  push(bytes.length, bitsCuenta);
+  for (var i2=0;i2<bytes.length;i2++) push(bytes[i2],8);
+  var cap = dataCW*8;
+  for (var t=0; t<4 && bits.length<cap; t++) bits.push(0);   // terminador
+  while (bits.length % 8) bits.push(0);
+  var pad = [0xEC,0x11], pi=0;
+  while (bits.length < cap){ push(pad[pi%2],8); pi++; }
+
+  var datos = [];
+  for (var b=0;b<bits.length;b+=8){
+    var by=0; for (var k2=0;k2<8;k2++) by = (by<<1)|bits[b+k2];
+    datos.push(by);
+  }
+
+  /* ---- GF(256) ---- */
+  var EXP = new Array(512), LOG = new Array(256);
+  (function(){ var xx=1;
+    for (var i=0;i<255;i++){ EXP[i]=xx; LOG[xx]=i; xx<<=1; if (xx & 0x100) xx ^= 0x11d; }
+    for (var i=255;i<512;i++) EXP[i]=EXP[i-255];
+  })();
+  function mul(a,b){ return (a===0||b===0) ? 0 : EXP[LOG[a]+LOG[b]]; }
+
+  function genPoly(n){
+    var p=[1];
+    for (var i=0;i<n;i++){
+      var np = new Array(p.length+1).fill(0);
+      for (var j=0;j<p.length;j++){
+        np[j]   ^= p[j];                    // p * x
+        np[j+1] ^= mul(p[j], EXP[i]);       // p * a^i
+      }
+      p = np;
+    }
+    return p;
+  }
+  function rs(bloque, n){
+    var g = genPoly(n);
+    var res = bloque.concat(new Array(n).fill(0));
+    for (var i=0;i<bloque.length;i++){
+      var c = res[i];
+      if (c === 0) continue;
+      for (var j=0;j<g.length;j++) res[i+j] ^= mul(g[j], c);
+    }
+    return res.slice(bloque.length);
+  }
+
+  /* ---- bloques ---- */
+  var bloquesD = [], bloquesE = [], off = 0;
+  grupos.forEach(function(g){
+    for (var n=0;n<g[0];n++){
+      var blk = datos.slice(off, off+g[1]); off += g[1];
+      bloquesD.push(blk);
+      bloquesE.push(rs(blk, ecLen));
+    }
+  });
+
+  var finales = [];
+  var maxD = Math.max.apply(null, bloquesD.map(function(b){return b.length;}));
+  for (var i3=0;i3<maxD;i3++)
+    for (var j3=0;j3<bloquesD.length;j3++)
+      if (i3 < bloquesD[j3].length) finales.push(bloquesD[j3][i3]);
+  for (var i4=0;i4<ecLen;i4++)
+    for (var j4=0;j4<bloquesE.length;j4++)
+      finales.push(bloquesE[j4][i4]);
+
+  /* ---- matriz ---- */
+  var N = 17 + ver*4;
+  var m  = []; var res = [];
+  for (var i5=0;i5<N;i5++){ m.push(new Array(N).fill(0)); res.push(new Array(N).fill(false)); }
+
+  function finder(r,c){
+    for (var dr=-1;dr<=7;dr++) for (var dc=-1;dc<=7;dc++){
+      var rr=r+dr, cc=c+dc;
+      if (rr<0||rr>=N||cc<0||cc>=N) continue;
+      var dentro = (dr>=0&&dr<=6&&(dc===0||dc===6)) || (dc>=0&&dc<=6&&(dr===0||dr===6)) ||
+                   (dr>=2&&dr<=4&&dc>=2&&dc<=4);
+      m[rr][cc] = dentro ? 1 : 0;
+      res[rr][cc] = true;
+    }
+  }
+  finder(0,0); finder(0,N-7); finder(N-7,0);
+
+  // timing
+  for (var i6=8;i6<N-8;i6++){
+    m[6][i6] = (i6%2===0)?1:0; res[6][i6]=true;
+    m[i6][6] = (i6%2===0)?1:0; res[i6][6]=true;
+  }
+  // alineacion
+  var ce = ALIN[ver];
+  for (var a=0;a<ce.length;a++) for (var b2=0;b2<ce.length;b2++){
+    var r2=ce[a], c2=ce[b2];
+    if ((r2<=7&&c2<=7)||(r2<=7&&c2>=N-8)||(r2>=N-8&&c2<=7)) continue;
+    for (var dr2=-2;dr2<=2;dr2++) for (var dc2=-2;dc2<=2;dc2++){
+      m[r2+dr2][c2+dc2] = (Math.max(Math.abs(dr2),Math.abs(dc2))!==1) ? 1 : 0;
+      res[r2+dr2][c2+dc2] = true;
+    }
+  }
+  // modulo oscuro + reserva formato
+  m[N-8][8]=1; res[N-8][8]=true;
+  for (var i7=0;i7<9;i7++){
+    if (!res[8][i7]){ res[8][i7]=true; }
+    if (!res[i7][8]){ res[i7][8]=true; }
+  }
+  for (var i8=0;i8<8;i8++){ res[8][N-1-i8]=true; res[N-1-i8][8]=true; }
+  // reserva version
+  if (ver>=7){
+    for (var i9=0;i9<6;i9++) for (var j9=0;j9<3;j9++){
+      res[i9][N-11+j9]=true; res[N-11+j9][i9]=true;
+    }
+  }
+
+  /* ---- colocar datos ---- */
+  var flujo = [];
+  finales.forEach(function(by){ for (var k=7;k>=0;k--) flujo.push((by>>>k)&1); });
+  var idx=0, arriba=true;
+  for (var col=N-1; col>0; col-=2){
+    if (col===6) col--;
+    for (var s=0; s<N; s++){
+      var fil = arriba ? (N-1-s) : s;
+      for (var d=0; d<2; d++){
+        var cc2 = col-d;
+        if (res[fil][cc2]) continue;
+        m[fil][cc2] = (idx < flujo.length) ? flujo[idx] : 0;
+        idx++;
+      }
+    }
+    arriba = !arriba;
+  }
+
+  /* ---- mascaras ---- */
+  function maskFn(k){
+    switch(k){
+      case 0: return function(i,j){ return (i+j)%2===0; };
+      case 1: return function(i){ return i%2===0; };
+      case 2: return function(i,j){ return j%3===0; };
+      case 3: return function(i,j){ return (i+j)%3===0; };
+      case 4: return function(i,j){ return (Math.floor(i/2)+Math.floor(j/3))%2===0; };
+      case 5: return function(i,j){ return ((i*j)%2)+((i*j)%3)===0; };
+      case 6: return function(i,j){ return ((((i*j)%2)+((i*j)%3))%2)===0; };
+      default:return function(i,j){ return ((((i+j)%2)+((i*j)%3))%2)===0; };
+    }
+  }
+  function bchFormato(d){
+    var v2=d<<10;
+    for (var i=4;i>=0;i--) if (v2 & (1<<(i+10))) v2 ^= (0x537 << i);
+    return ((d<<10)|v2) ^ 0x5412;
+  }
+  function bchVersion(v3){
+    var x=v3<<12;
+    for (var i=5;i>=0;i--) if (x & (1<<(i+12))) x ^= (0x1F25 << i);
+    return (v3<<12)|x;
+  }
+  function ponerFormato(mm, mask){
+    var f = bchFormato((0<<3)|mask);   // 0 = nivel M
+    for (var i=0;i<15;i++){
+      var bit = (f>>>i)&1;
+      // vertical/horizontal alrededor del finder superior izquierdo
+      if (i<6)       mm[i][8]=bit;
+      else if (i===6) mm[7][8]=bit;
+      else if (i===7) mm[8][8]=bit;
+      else if (i===8) mm[8][7]=bit;
+      else            mm[8][14-i]=bit;
+
+      if (i<8)       mm[8][N-1-i]=bit;
+      else           mm[N-15+i][8]=bit;
+    }
+    mm[N-8][8]=1;
+  }
+  function penal(mm){
+    var p=0, i, j, k;
+    // regla 1
+    for (i=0;i<N;i++){
+      var run=1;
+      for (j=1;j<N;j++){ if (mm[i][j]===mm[i][j-1]) run++; else { if (run>=5) p+=3+(run-5); run=1; } }
+      if (run>=5) p+=3+(run-5);
+      run=1;
+      for (j=1;j<N;j++){ if (mm[j][i]===mm[j-1][i]) run++; else { if (run>=5) p+=3+(run-5); run=1; } }
+      if (run>=5) p+=3+(run-5);
+    }
+    // regla 2
+    for (i=0;i<N-1;i++) for (j=0;j<N-1;j++){
+      var s2=mm[i][j]+mm[i][j+1]+mm[i+1][j]+mm[i+1][j+1];
+      if (s2===0||s2===4) p+=3;
+    }
+    // regla 3
+    var pat1=[1,0,1,1,1,0,1,0,0,0,0], pat2=[0,0,0,0,1,0,1,1,1,0,1];
+    for (i=0;i<N;i++) for (j=0;j<=N-11;j++){
+      var ok1=true, ok2=true, ok3=true, ok4=true;
+      for (k=0;k<11;k++){
+        if (mm[i][j+k]!==pat1[k]) ok1=false;
+        if (mm[i][j+k]!==pat2[k]) ok2=false;
+        if (mm[j+k][i]!==pat1[k]) ok3=false;
+        if (mm[j+k][i]!==pat2[k]) ok4=false;
+      }
+      if (ok1) p+=40; if (ok2) p+=40; if (ok3) p+=40; if (ok4) p+=40;
+    }
+    // regla 4
+    var osc=0;
+    for (i=0;i<N;i++) for (j=0;j<N;j++) osc+=mm[i][j];
+    var pct = osc*100/(N*N);
+    p += Math.floor(Math.abs(pct-50)/5)*10;
+    return p;
+  }
+
+  var mejor=null, mejorP=Infinity;
+  for (var k3=0;k3<8;k3++){
+    var mm=[]; for (var i10=0;i10<N;i10++) mm.push(m[i10].slice());
+    var fn=maskFn(k3);
+    for (var i11=0;i11<N;i11++) for (var j11=0;j11<N;j11++)
+      if (!res[i11][j11] && fn(i11,j11)) mm[i11][j11] ^= 1;
+    ponerFormato(mm,k3);
+    if (ver>=7){
+      var vb = bchVersion(ver);
+      for (var i12=0;i12<18;i12++){
+        var bit2=(vb>>>i12)&1;
+        mm[Math.floor(i12/3)][N-11+(i12%3)] = bit2;
+        mm[N-11+(i12%3)][Math.floor(i12/3)] = bit2;
+      }
+    }
+    var pen = penal(mm);
+    if (pen < mejorP){ mejorP = pen; mejor = mm; }
+  }
+  return { size:N, version:ver, modulos:mejor,
+           isDark:function(r,c){ return mejor[r][c]===1; } };
+}
+</script>
+<script>
+/* ================================================================
+   POMAR HORTI · Certificados de Viaje
+   Front-end 100% estático (GitHub Pages) + backend Google Apps Script
+   ================================================================ */
+
+/* ---------- CONFIGURACIÓN ---------- */
+const API_URL = 'https://script.google.com/macros/s/AKfycbz_P8ctUXb4e6KYuImN0XrYDTenkXVxlPlIbgEJN8HvdGOtRP0GabS6CQojhyWtvVPNEA/exec';
+const LOGO_SRC = 'PomarHorti.png';
+const EMPRESA  = 'POMAR 1953';
+const APP_NOM  = 'PomarHorti · Certificados de Viaje';
+const MAX_FOTO = 1280;      // px lado mayor de la evidencia
+const GPS_MAX_PRECISION = 300; // metros aceptados
+
+/* ---------- ESTADO ---------- */
+let S = { sesion:null, viaje:null, viajes:[], rol:'conductor' };
+let DB = null;
+
+/* ================================================================
+   1. UTILIDADES BÁSICAS
+   ================================================================ */
+function $(id){ return document.getElementById(id); }
+
+function ir(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const el = $(id); if(el){ el.classList.add('on'); window.scrollTo(0,0); }
+}
+
+function msg(id, texto, tipo){
+  const el = $(id); if(!el) return;
+  el.className = 'msg ' + (tipo||'err') + (texto ? ' on' : '');
+  el.innerHTML = texto || '';
+}
+function toast(t, ms){
+  const el = $('toast'); el.textContent = t; el.classList.add('on');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('on'), ms||2600);
+}
+function cargando(on, txt){
+  $('ovTxt').textContent = txt || 'Procesando…';
+  $('ov').classList.toggle('on', !!on);
+}
+
+function fmtFecha(v){
+  if(!v) return '—';
+  const d = (v instanceof Date) ? v : new Date(v);
+  if(isNaN(d.getTime())) return String(v);
+  const p = n => String(n).padStart(2,'0');
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+'  '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function fmtCoord(lat,lon){
+  if(lat===''||lat===undefined||lat===null||lon===''||lon===undefined||lon===null) return '—';
+  return Number(lat).toFixed(6)+', '+Number(lon).toFixed(6);
+}
+function nuevoId(){
+  const d = new Date(), p = n=>String(n).padStart(2,'0');
+  return 'V'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds())
+       + '-' + Math.random().toString(36).substring(2,6).toUpperCase();
+}
+function uid(n){
+  let s=''; const c='abcdef0123456789';
+  for(let i=0;i<(n||16);i++) s += c[Math.floor(Math.random()*c.length)];
+  return s;
+}
+
+/* ================================================================
+   2. ALMACENAMIENTO LOCAL (IndexedDB) — soporte offline
+   ================================================================ */
+function abrirDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open('pomarhorti', 2);
+    r.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('kv'))   db.createObjectStore('kv', {keyPath:'k'});
+      if(!db.objectStoreNames.contains('cola')) db.createObjectStore('cola', {keyPath:'n', autoIncrement:true});
+    };
+    r.onsuccess = e => res(e.target.result);
+    r.onerror   = e => rej(e.target.error);
+  });
+}
+function tx(store, modo){ return DB.transaction(store, modo).objectStore(store); }
+function pedir(req){ return new Promise((res,rej)=>{ req.onsuccess=()=>res(req.result); req.onerror=()=>rej(req.error); }); }
+
+async function kvSet(k, v){ if(!DB) return; return pedir(tx('kv','readwrite').put({k, v})); }
+async function kvGet(k){ if(!DB) return null; const r = await pedir(tx('kv').get(k)); return r ? r.v : null; }
+async function kvDel(k){ if(!DB) return; return pedir(tx('kv','readwrite').delete(k)); }
+
+async function colaPush(op){ if(!DB) return; await pedir(tx('cola','readwrite').add(op)); actualizarEstado(); }
+async function colaTodo(){ if(!DB) return []; return pedir(tx('cola').getAll()); }
+async function colaDel(n){ if(!DB) return; return pedir(tx('cola','readwrite').delete(n)); }
+async function colaCount(){ if(!DB) return 0; return pedir(tx('cola').count()); }
+
+/* ================================================================
+   3. CAPA DE RED
+   ================================================================ */
+async function api(payload, opts){
+  opts = opts || {};
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), opts.timeout || 60000);
+  try{
+    const r = await fetch(API_URL, {
+      method:'POST',
+      // text/plain evita el preflight CORS que Apps Script no responde
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload),
+      redirect:'follow',
+      signal: ctrl.signal
+    });
+    const txt = await r.text();
+    try { return JSON.parse(txt); }
+    catch(e){ return {ok:false, error:'Respuesta inesperada del servidor.'}; }
+  } catch(err){
+    if(opts.jsonp !== false && JSON.stringify(payload).length < 1500){
+      try { return await apiJsonp(payload); } catch(e2){ /* sigue */ }
+    }
+    return {ok:false, error:'SIN_RED', red:true};
+  } finally { clearTimeout(t); }
+}
+
+function apiJsonp(payload){
+  return new Promise((res,rej)=>{
+    const cb = 'ph_' + uid(8);
+    const s = document.createElement('script');
+    const limpiar = ()=>{ try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); };
+    const to = setTimeout(()=>{ limpiar(); rej(new Error('timeout')); }, 45000);
+    window[cb] = d => { clearTimeout(to); limpiar(); res(d); };
+    s.onerror = () => { clearTimeout(to); limpiar(); rej(new Error('jsonp')); };
+    s.src = API_URL + '?callback=' + cb + '&payload=' + encodeURIComponent(JSON.stringify(payload));
+    document.body.appendChild(s);
+  });
+}
+
+function enLinea(){ return navigator.onLine !== false; }
+
+function pintarRed(estado, texto){
+  const n = $('net');
+  n.className = 'net' + (estado ? ' on' : '') + (estado==='sync' ? ' sync' : '');
+  n.textContent = texto || '';
+  document.body.style.paddingTop = estado ? '28px' : '0';
+}
+async function actualizarEstado(){
+  const c = await colaCount();
+  if($('estCola')) $('estCola').textContent = c;
+  if($('estConn')) $('estConn').textContent = enLinea() ? 'En línea' : 'Sin conexión';
+  if(!enLinea())      pintarRed(true,  'Sin conexión · el viaje continúa y se guardará al reconectar');
+  else if(c > 0)      pintarRed('sync', c + ' registro(s) pendientes de sincronizar…');
+  else                pintarRed(false);
+}
+
+/* ---------- sincronización de la cola ---------- */
+let sincronizando = false;
+async function sincronizar(){
+  if(sincronizando || !enLinea() || !S.sesion) return;
+  sincronizando = true;
+  try{
+    const ops = await colaTodo();
+    for(const op of ops){
+      const payload = Object.assign({}, op.payload, {token: S.sesion.token});
+      const r = await api(payload);
+      if(r && r.ok){
+        await colaDel(op.n);
+        if(op.payload.paso && S.viaje && S.viaje.id === op.payload.idViaje){
+          if(op.payload.paso==='entrada') S.viaje.entrada.sync = true;
+          if(op.payload.paso==='salida')  S.viaje.salida.sync  = true;
+          if(op.payload.paso==='datos')   S.viaje.datosSync    = true;
+          await guardarViajeLocal();
+        }
+      } else if(r && r.red){
+        break;                    // sigue sin red: reintentar luego
+      } else {
+        await colaDel(op.n);      // error lógico: no reintentar en bucle
+        console.warn('Op descartada', op, r);
+      }
+    }
+  } finally {
+    sincronizando = false;
+    actualizarEstado();
+  }
+}
+function sincronizarAhora(){
+  if(!enLinea()) return toast('Sin conexión a internet');
+  toast('Sincronizando…');
+  sincronizar().then(()=>toast('Sincronización terminada'));
+}
+window.addEventListener('online',  ()=>{ actualizarEstado(); sincronizar(); });
+window.addEventListener('offline', ()=> actualizarEstado());
+setInterval(()=>{ if(S.sesion) sincronizar(); }, 30000);
+</script>
+<script>
+/* ================================================================
+   4. AUTENTICACIÓN
+   ================================================================ */
+async function doRegistro(){
+  const nombre = $('regNombre').value.trim();
+  const p1 = $('regPass').value, p2 = $('regPass2').value;
+  msg('regMsg','');
+  if(nombre.length < 5)  return msg('regMsg','Escriba el nombre completo del conductor.');
+  if(p1.length < 6)      return msg('regMsg','La contraseña debe tener al menos 6 caracteres.');
+  if(p1 !== p2)          return msg('regMsg','Las contraseñas no coinciden.');
+  if(!enLinea())         return msg('regMsg','Necesita conexión a internet para crear el usuario.');
+
+  $('regBtn').disabled = true; cargando(true,'Creando usuario…');
+  const r = await api({accion:'registrar', nombre, password:p1});
+  cargando(false); $('regBtn').disabled = false;
+
+  if(!r || !r.ok) return msg('regMsg', (r && r.error==='SIN_RED') ? 'No hay conexión con el servidor.' : ((r&&r.error)||'No se pudo crear el usuario.'));
+  $('outUsuario').textContent = r.usuario;
+  $('outPass').textContent    = r.password;
+  $('regForm').style.display = 'none';
+  $('regResultado').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+function copiarCred(){
+  const t = 'Pomar Horti\nUsuario: ' + $('outUsuario').textContent + '\nContraseña: ' + $('outPass').textContent;
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('Credenciales copiadas')).catch(()=>toast('No se pudo copiar'));
+  else toast('Copie manualmente sus datos');
+}
+function irLoginConDatos(){
+  $('logUsuario').value = $('outUsuario').textContent;
+  $('logPass').value    = $('outPass').textContent;
+  $('regForm').style.display='block'; $('regResultado').style.display='none';
+  $('regNombre').value=''; $('regPass').value=''; $('regPass2').value='';
+  ir('scLogin');
+}
+
+async function doLogin(){
+  const usuario = $('logUsuario').value.trim();
+  const password = $('logPass').value;
+  msg('logMsg','');
+  if(!usuario || !password) return msg('logMsg','Ingrese usuario y contraseña.');
+  if(!enLinea())            return msg('logMsg','Necesita conexión a internet para ingresar.');
+
+  $('logBtn').disabled = true; cargando(true,'Verificando…');
+  const r = await api({accion:'login', usuario, password});
+  cargando(false); $('logBtn').disabled = false;
+
+  if(!r || !r.ok) return msg('logMsg', (r && r.error==='SIN_RED') ? 'No hay conexión con el servidor.' : ((r&&r.error)||'Credenciales incorrectas.'));
+  S.sesion = r.sesion; S.rol = r.sesion.rol;
+  await kvSet('sesion', r.sesion);
+  $('logPass').value = '';
+  entrarApp();
+}
+
+async function doSalir(){
+  const pend = await colaCount();
+  if(pend > 0 && !confirm('Hay ' + pend + ' registro(s) sin sincronizar. Si cierra sesión podrían perderse. ¿Continuar?')) return;
+  if(enLinea() && S.sesion) api({accion:'salir', token:S.sesion.token});
+  S.sesion = null; S.viaje = null;
+  await kvDel('sesion');
+  ir('scBienvenida');
+}
+
+async function entrarApp(){
+  $('homeNombre').textContent = S.sesion.nombre || S.sesion.usuario;
+  $('homeRol').textContent = (S.sesion.rol === 'admin' ? 'Administrador' : 'Conductor') + ' · ' + S.sesion.usuario;
+  $('cardAdmin').style.display = S.sesion.rol === 'admin' ? 'block' : 'none';
+  $('homeHistTxt').textContent = S.sesion.rol === 'admin'
+    ? 'Histórico de todos los conductores'
+    : 'Histórico de mis viajes certificados';
+  ir('scHome');
+  actualizarEstado();
+  sincronizar();
+  revisarViajeAbierto();
+}
+
+async function revisarViajeAbierto(){
+  const local = await kvGet('viaje');
+  if(local && local.estado !== 'COMPLETADO' && local.usuario === S.sesion.usuario){
+    S.viaje = local;
+    $('homeReanudarTxt').textContent = local.id + ' · iniciado el ' + fmtFecha(local.creado);
+    $('homeReanudar').classList.add('on');
+    return;
+  }
+  $('homeReanudar').classList.remove('on');
+  if(enLinea()){
+    const r = await api({accion:'viajeAbierto', token:S.sesion.token});
+    if(r && r.ok && r.viaje){
+      S.viaje = desdeServidor(r.viaje);
+      await guardarViajeLocal();
+      $('homeReanudarTxt').textContent = r.viaje.id + ' · registrado en el servidor';
+      $('homeReanudar').classList.add('on');
+    }
+  }
+}
+
+function desdeServidor(v){
+  return {
+    id:v.id, qr:v.qr || uid(16), usuario:v.usuario, conductor:v.conductor,
+    estado:v.estado, creado:v.creado,
+    entrada:{foto:v.entrada.foto||'', fecha:v.entrada.fecha||'', lat:v.entrada.lat, lon:v.entrada.lon,
+             precision:v.entrada.precision, sync:!!v.entrada.foto, remota:!!v.entrada.foto},
+    salida:{foto:v.salida.foto||'', fecha:v.salida.fecha||'', lat:v.salida.lat, lon:v.salida.lon,
+            precision:v.salida.precision, sync:!!v.salida.foto, remota:!!v.salida.foto},
+    placa:v.placa||'', peso:v.peso||'', obs:v.observaciones||'', datosSync:true
+  };
+}
+
+/* ================================================================
+   5. VIAJE
+   ================================================================ */
+async function nuevoViaje(){
+  if(S.viaje && S.viaje.estado !== 'COMPLETADO'){
+    if(!confirm('Hay un viaje en curso (' + S.viaje.id + '). Si inicia uno nuevo, el anterior queda pendiente. ¿Continuar?')) return;
+  }
+  S.viaje = {
+    id: nuevoId(), qr: uid(16),
+    usuario: S.sesion.usuario, conductor: S.sesion.nombre || S.sesion.usuario,
+    estado:'EN_CURSO', creado: new Date().toISOString(),
+    entrada:{foto:'',fecha:'',lat:'',lon:'',precision:'',sync:false},
+    salida: {foto:'',fecha:'',lat:'',lon:'',precision:'',sync:false},
+    placa:'', peso:'', obs:'', datosSync:false
+  };
+  await guardarViajeLocal();
+  abrirViaje();
+}
+
+function reanudarViaje(){ if(S.viaje) abrirViaje(); }
+
+function abrirViaje(){
+  $('viajeId').textContent = S.viaje.id;
+  $('inPlaca').value = S.viaje.placa || '';
+  $('inPeso').value  = S.viaje.peso  || '';
+  $('inObs').value   = S.viaje.obs   || '';
+  msg('viajeMsg','');
+  pintarViaje();
+  ir('scViaje');
+}
+function salirDeViaje(){ volverHome(); }
+function volverHome(){ ir('scHome'); actualizarEstado(); revisarViajeAbierto(); }
+
+async function guardarViajeLocal(){ if(S.viaje) await kvSet('viaje', S.viaje); }
+
+function pintarViaje(){
+  const v = S.viaje; if(!v) return;
+  ['entrada','salida'].forEach(tipo=>{
+    const e = v[tipo];
+    const cont = $(tipo==='entrada' ? 'entraCont' : 'salidaCont');
+    const step = $(tipo==='entrada' ? 'stEntrada' : 'stSalida');
+    const btn  = $(tipo==='entrada' ? 'btnEntrada' : 'btnSalida');
+    if(!e.foto){ cont.innerHTML=''; step.classList.remove('done');
+      btn.textContent = '📷 Tomar foto de ' + tipo; return; }
+    step.classList.add('done');
+    btn.textContent = '📷 Repetir foto de ' + tipo;
+    const mapId = 'map_' + tipo;
+    cont.innerHTML =
+      '<div class="thumb"><img src="'+e.foto+'" alt=""></div>' +
+      '<canvas class="minimap" id="'+mapId+'"></canvas>' +
+      '<div class="meta">' +
+        '<div><small>Hora de '+tipo+'</small><b>'+fmtFecha(e.fecha)+'</b></div>' +
+        '<div><small>Precisión GPS</small><b>'+(e.precision?('± '+Math.round(e.precision)+' m'):'—')+'</b></div>' +
+        '<div style="grid-column:1/-1"><small>Coordenadas</small><b>'+fmtCoord(e.lat,e.lon)+'</b></div>' +
+      '</div>' +
+      '<div style="margin-top:9px">' +
+        '<span class="pill '+(e.sync?'ok':'pend')+'">'+(e.sync?'Guardado en servidor':'Guardado local · pendiente')+'</span>' +
+      '</div>';
+    if(e.lat) dibujarMiniMapa(mapId, e.lat, e.lon);
+  });
+  $('stDatos').classList.toggle('done', !!(v.placa && v.peso!==''));
+  $('viajeEstado').textContent = v.estado==='COMPLETADO' ? 'Certificado' : 'En curso';
+  $('viajeEstado').className = 'pill ' + (v.estado==='COMPLETADO' ? 'ok' : 'curso');
+}
+
+/* ---------- datos placa / peso con autoguardado ---------- */
+let tDatos = null;
+function marcarDatos(){
+  if(!S.viaje) return;
+  S.viaje.placa = $('inPlaca').value.toUpperCase().trim();
+  S.viaje.peso  = $('inPeso').value;
+  S.viaje.obs   = $('inObs').value;
+  S.viaje.datosSync = false;
+  clearTimeout(tDatos);
+  tDatos = setTimeout(guardarDatos, 1400);
+  $('stDatos').classList.toggle('done', !!(S.viaje.placa && S.viaje.peso!==''));
+}
+async function guardarDatos(){
+  clearTimeout(tDatos);
+  if(!S.viaje) return;
+  S.viaje.placa = $('inPlaca').value.toUpperCase().trim();
+  S.viaje.peso  = $('inPeso').value;
+  S.viaje.obs   = $('inObs').value;
+  await guardarViajeLocal();
+  if(!S.viaje.placa && S.viaje.peso==='') return;
+  await enviarPaso('datos');
+}
+
+/* ---------- envío incremental (autosave hacia el servidor) ---------- */
+async function colaPushUnico(op){
+  const todo = await colaTodo();
+  for(const o of todo){
+    if(o.payload && o.payload.accion===op.payload.accion &&
+       o.payload.idViaje===op.payload.idViaje && o.payload.paso===op.payload.paso){
+      await colaDel(o.n);
+    }
+  }
+  await colaPush(op);
+}
+
+function payloadPaso(paso){
+  const v = S.viaje;
+  if(paso === 'datos'){
+    return {accion:'guardarPaso', idViaje:v.id, qrToken:v.qr, paso:'datos', origen:'web',
+            datos:{placa:v.placa, peso:v.peso, observaciones:v.obs}};
+  }
+  const e = v[paso];
+  return {accion:'guardarPaso', idViaje:v.id, qrToken:v.qr, paso, origen:'web',
+          foto:e.foto, forzar:!!e.forzar,
+          datos:{fecha:e.fecha, lat:e.lat, lon:e.lon, precision:e.precision}};
+}
+
+async function enviarPaso(paso){
+  if(!S.viaje || !S.sesion) return false;
+  const payload = payloadPaso(paso);
+  if(!enLinea()){ await colaPushUnico({payload}); return false; }
+
+  const r = await api(Object.assign({token:S.sesion.token}, payload), {jsonp:false});
+  if(r && r.ok){
+    if(paso==='datos') S.viaje.datosSync = true;
+    else { S.viaje[paso].sync = true; S.viaje[paso].forzar = false; }
+    await guardarViajeLocal();
+    if(paso!=='datos') pintarViaje();
+    actualizarEstado();
+    return true;
+  }
+  await colaPushUnico({payload});
+  if(r && !r.red && r.error) toast(r.error);
+  return false;
+}
+
+/* ---------- captura de evidencia ---------- */
+async function capturar(tipo){
+  if(!S.viaje) return;
+  if(S.viaje[tipo].foto && !confirm('Ya hay una foto de ' + tipo + '. ¿Desea reemplazarla?')) return;
+  const yaEstaba = !!S.viaje[tipo].foto;
+
+  const r = await abrirCamara(tipo);
+  if(!r) return;
+
+  S.viaje[tipo] = {
+    foto:r.dataURL, fecha:r.fecha, lat:r.lat, lon:r.lon,
+    precision:r.precision, sync:false, forzar:yaEstaba
+  };
+  await guardarViajeLocal();
+  pintarViaje();
+  toast('Evidencia guardada · sincronizando…');
+  enviarPaso(tipo).then(ok => { if(ok) toast('Evidencia de ' + tipo + ' guardada en el servidor'); });
+}
+
+/* ================================================================
+   6. CÁMARA EN VIVO (obliga a tomar la foto, no permite galería)
+   ================================================================ */
+let camStream=null, camResolve=null, camWatch=null, camGeo=null, camTipo=null;
+
+function abrirCamara(tipo){
+  camTipo = tipo; camGeo = null;
+  $('camTitulo').textContent = (tipo==='entrada' ? 'HORA DE ENTRADA' : 'HORA DE SALIDA');
+  $('cam').classList.add('on');
+  $('camErr').classList.remove('on');
+  $('camShutter').disabled = true;
+  setGps('','Obteniendo ubicación GPS…');
+  iniciarGPS();
+  iniciarVideo();
+  return new Promise(res => { camResolve = res; });
+}
+
+async function iniciarVideo(){
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('nomedia');
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080} },
+      audio:false
+    });
+    const v = $('camVideo');
+    v.srcObject = camStream;
+    await v.play().catch(()=>{});
+  }catch(err){
+    let m = 'Permita el acceso a la cámara desde los ajustes del navegador e intente de nuevo.';
+    if(err && (err.name==='NotAllowedError')) m = 'Debe autorizar el uso de la cámara. La foto es obligatoria y no se puede adjuntar desde la galería.';
+    else if(err && err.name==='NotFoundError') m = 'No se detectó ninguna cámara en el dispositivo.';
+    else if(location.protocol !== 'https:' && location.hostname !== 'localhost') m = 'La cámara solo funciona sobre HTTPS. Abra la aplicación con https://';
+    $('camErrM').textContent = m;
+    $('camErr').classList.add('on');
+  }
+}
+function reintentarCamara(){ $('camErr').classList.remove('on'); iniciarVideo(); iniciarGPS(); }
+
+function setGps(clase, texto){
+  $('gpsDot').className = 'dot' + (clase ? ' ' + clase : '');
+  $('gpsTxt').textContent = texto;
+}
+function iniciarGPS(){
+  if(camWatch !== null){ try{navigator.geolocation.clearWatch(camWatch);}catch(e){} camWatch=null; }
+  if(!navigator.geolocation){ setGps('bad','Este dispositivo no reporta GPS'); return; }
+  camWatch = navigator.geolocation.watchPosition(
+    pos => {
+      camGeo = {lat:pos.coords.latitude, lon:pos.coords.longitude, precision:pos.coords.accuracy};
+      const buena = pos.coords.accuracy <= GPS_MAX_PRECISION;
+      setGps(buena ? 'ok' : '', 'GPS ' + camGeo.lat.toFixed(5) + ', ' + camGeo.lon.toFixed(5) +
+             '  ·  ± ' + Math.round(camGeo.precision) + ' m' + (buena ? '' : ' (afinando…)'));
+      $('camShutter').disabled = false;
+    },
+    err => {
+      setGps('bad', err && err.code===1
+        ? 'Permiso de ubicación denegado. Actívelo para continuar.'
+        : 'No se pudo obtener la ubicación. Salga a cielo abierto.');
+    },
+    {enableHighAccuracy:true, timeout:30000, maximumAge:0}
+  );
+}
+
+function cerrarCamara(){
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  if(camWatch !== null){ try{navigator.geolocation.clearWatch(camWatch);}catch(e){} camWatch=null; }
+  $('camVideo').srcObject = null;
+  $('cam').classList.remove('on');
+  if(camResolve){ const f=camResolve; camResolve=null; f(null); }
+}
+
+async function dispararFoto(){
+  if(!camGeo){ toast('Esperando la señal de GPS…'); return; }
+  const v = $('camVideo');
+  if(!v.videoWidth){ toast('La cámara aún no está lista'); return; }
+  $('camShutter').disabled = true;
+
+  const esc = Math.min(1, MAX_FOTO / Math.max(v.videoWidth, v.videoHeight));
+  const w = Math.round(v.videoWidth*esc), h = Math.round(v.videoHeight*esc);
+  const c = $('workCanvas'); c.width=w; c.height=h;
+  const x = c.getContext('2d');
+  x.drawImage(v, 0, 0, w, h);
+
+  const ahora = new Date();
+  marcaDeAgua(x, w, h, {
+    tipo: camTipo, fecha: ahora, lat: camGeo.lat, lon: camGeo.lon,
+    precision: camGeo.precision, id: S.viaje ? S.viaje.id : '',
+    conductor: S.sesion ? (S.sesion.nombre || S.sesion.usuario) : ''
+  });
+
+  const dataURL = c.toDataURL('image/jpeg', 0.78);
+  const salida = {dataURL, fecha: ahora.toISOString(), lat:camGeo.lat, lon:camGeo.lon, precision:camGeo.precision};
+
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  if(camWatch !== null){ try{navigator.geolocation.clearWatch(camWatch);}catch(e){} camWatch=null; }
+  $('camVideo').srcObject = null;
+  $('cam').classList.remove('on');
+  const f = camResolve; camResolve = null;
+  if(f) f(salida);
+}
+
+function marcaDeAgua(x, w, h, d){
+  const bh = Math.max(96, Math.round(h*0.20));
+  const g = x.createLinearGradient(0, h-bh-24, 0, h);
+  g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(.35,'rgba(10,15,35,.78)'); g.addColorStop(1,'rgba(10,15,35,.93)');
+  x.fillStyle = g; x.fillRect(0, h-bh-24, w, bh+24);
+
+  x.fillStyle = '#D02128'; x.fillRect(0, h-bh-24, w, 5);
+
+  const F = s => Math.max(10, Math.round(w*s));
+  x.textBaseline = 'top';
+  x.fillStyle = '#FFFFFF';
+  x.font = '700 ' + F(0.036) + 'px system-ui,Arial';
+  x.fillText((d.tipo==='entrada' ? 'HORA DE ENTRADA' : 'HORA DE SALIDA'), 18, h-bh-4);
+
+  x.font = '600 ' + F(0.026) + 'px system-ui,Arial';
+  x.fillStyle = 'rgba(255,255,255,.92)';
+  const p = n => String(n).padStart(2,'0');
+  const f = d.fecha;
+  const fechaTxt = p(f.getDate())+'/'+p(f.getMonth()+1)+'/'+f.getFullYear()+'  '+p(f.getHours())+':'+p(f.getMinutes())+':'+p(f.getSeconds());
+  x.fillText(fechaTxt, 18, h-bh+F(0.042));
+  x.fillText('GPS ' + d.lat.toFixed(6) + ', ' + d.lon.toFixed(6) + '  (± ' + Math.round(d.precision) + ' m)', 18, h-bh+F(0.078));
+  x.font = '500 ' + F(0.022) + 'px system-ui,Arial';
+  x.fillStyle = 'rgba(255,255,255,.72)';
+  x.fillText(d.id + '  ·  ' + d.conductor, 18, h-bh+F(0.114));
+
+  x.textAlign = 'right';
+  x.font = '800 ' + F(0.028) + 'px system-ui,Arial';
+  x.fillStyle = 'rgba(255,255,255,.9)';
+  x.fillText(EMPRESA, w-18, h-bh-4);
+  x.textAlign = 'left';
+}
+
+/* ================================================================
+   7. MAPA GEORREFERENCIADO (tiles OpenStreetMap sobre canvas)
+   ================================================================ */
+function lon2x(lon,z){ return (lon+180)/360*Math.pow(2,z); }
+function lat2y(lat,z){ const r=lat*Math.PI/180; return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*Math.pow(2,z); }
+
+function cargarImg(src, cors){
+  return new Promise(res=>{
+    const im = new Image();
+    if(cors) im.crossOrigin = 'anonymous';
+    im.onload  = ()=>res(im);
+    im.onerror = ()=>res(null);
+    im.src = src;
+  });
+}
+
+async function mapaCanvas(lat, lon, w, h, z){
+  z = z || 16;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const x = c.getContext('2d');
+
+  x.fillStyle = '#E8E6E1'; x.fillRect(0,0,w,h);
+
+  if(lat==='' || lat===null || lat===undefined){ marcoMapa(x,w,h,'Sin georreferencia'); return c; }
+  lat = Number(lat); lon = Number(lon);
+
+  const T = 256;
+  const px = lon2x(lon,z)*T, py = lat2y(lat,z)*T;
+  const x0 = px - w/2, y0 = py - h/2;
+  const tx0 = Math.floor(x0/T), ty0 = Math.floor(y0/T);
+  const tx1 = Math.floor((x0+w)/T), ty1 = Math.floor((y0+h)/T);
+
+  const tareas = [];
+  for(let tx=tx0; tx<=tx1; tx++){
+    for(let ty=ty0; ty<=ty1; ty++){
+      const max = Math.pow(2,z);
+      const sx = ((tx%max)+max)%max;
+      if(ty<0 || ty>=max) continue;
+      tareas.push({tx, ty, sx, url:'https://tile.openstreetmap.org/'+z+'/'+sx+'/'+ty+'.png'});
+    }
+  }
+  const imgs = await Promise.all(tareas.map(t=>cargarImg(t.url, true)));
+  let algo = false;
+  tareas.forEach((t,i)=>{
+    if(!imgs[i]) return;
+    algo = true;
+    x.drawImage(imgs[i], Math.round(t.tx*T - x0), Math.round(t.ty*T - y0), T, T);
+  });
+  if(!algo){ x.fillStyle='#E8E6E1'; x.fillRect(0,0,w,h); marcoMapa(x,w,h,'Mapa no disponible sin conexión'); }
+
+  // pin
+  const cx = w/2, cy = h/2;
+  x.beginPath(); x.arc(cx, cy, Math.max(14, h*0.10), 0, Math.PI*2);
+  x.fillStyle = 'rgba(42,80,160,.20)'; x.fill();
+  x.beginPath();
+  x.moveTo(cx, cy+14);
+  x.bezierCurveTo(cx-13, cy-4, cx-11, cy-20, cx, cy-20);
+  x.bezierCurveTo(cx+11, cy-20, cx+13, cy-4, cx, cy+14);
+  x.fillStyle = '#D02128'; x.fill();
+  x.strokeStyle = '#fff'; x.lineWidth = 2; x.stroke();
+  x.beginPath(); x.arc(cx, cy-13, 4.2, 0, Math.PI*2); x.fillStyle='#fff'; x.fill();
+
+  // coordenadas + atribución
+  x.fillStyle = 'rgba(19,28,61,.86)';
+  x.fillRect(0, h-22, w, 22);
+  x.fillStyle = '#fff'; x.textBaseline='middle'; x.font='600 11px system-ui,Arial';
+  x.fillText(lat.toFixed(6)+', '+lon.toFixed(6), 7, h-11);
+  x.textAlign='right'; x.font='500 9px system-ui,Arial'; x.fillStyle='rgba(255,255,255,.75)';
+  x.fillText('© OpenStreetMap', w-7, h-11);
+  x.textAlign='left';
+  return c;
+}
+function marcoMapa(x,w,h,texto){
+  x.strokeStyle='#C9C6C0'; x.lineWidth=2; x.strokeRect(1,1,w-2,h-2);
+  x.fillStyle='#8B8880'; x.font='600 12px system-ui,Arial';
+  x.textAlign='center'; x.textBaseline='middle';
+  x.fillText(texto, w/2, h/2);
+  x.textAlign='left'; x.textBaseline='alphabetic';
+}
+
+async function dibujarMiniMapa(canvasId, lat, lon){
+  const dest = $(canvasId); if(!dest) return;
+  const w = dest.clientWidth || 320, h = 118;
+  const m = await mapaCanvas(lat, lon, w, h, 16);
+  dest.width = w; dest.height = h;
+  dest.getContext('2d').drawImage(m, 0, 0);
+}
+
+/* ================================================================
+   8. COMPLETAR Y CERTIFICAR
+   ================================================================ */
+async function completar(){
+  const v = S.viaje; if(!v) return;
+  await guardarDatos();
+  msg('viajeMsg','');
+
+  const falta = [];
+  if(!v.entrada.foto) falta.push('foto de entrada');
+  if(!v.salida.foto)  falta.push('foto de salida');
+  if(!v.placa)        falta.push('placa');
+  if(v.peso==='' || isNaN(Number(v.peso))) falta.push('peso neto de báscula');
+  if(falta.length) return msg('viajeMsg','Faltan datos obligatorios: ' + falta.join(', ') + '.');
+
+  cargando(true,'Generando certificado…');
+  try{
+    if(enLinea()){ await sincronizar(); if(!v.entrada.sync) await enviarPaso('entrada');
+                   if(!v.salida.sync) await enviarPaso('salida'); if(!v.datosSync) await enviarPaso('datos'); }
+
+    const canvas = await renderCertificado(v);
+    const imagen = canvas.toDataURL('image/jpeg', 0.92);
+    await kvSet('cert_' + v.id, imagen);
+
+    let sincronizado = false;
+    if(enLinea()){
+      const r1 = await api({accion:'completarViaje', token:S.sesion.token, idViaje:v.id}, {jsonp:false});
+      if(r1 && r1.ok){
+        const r2 = await api({accion:'guardarCertificado', token:S.sesion.token, idViaje:v.id, imagen}, {jsonp:false});
+        sincronizado = !!(r2 && r2.ok);
+      } else if(r1 && !r1.red && r1.error){ msg('viajeMsg', r1.error); }
+    }
+    if(!sincronizado){
+      await colaPushUnico({payload:{accion:'completarViaje', idViaje:v.id}});
+      await colaPushUnico({payload:{accion:'guardarCertificado', idViaje:v.id, imagen}});
+    }
+
+    v.estado = 'COMPLETADO';
+    await guardarViajeLocal();
+    await kvDel('viaje');
+
+    mostrarCertificado(v, imagen, sincronizado);
+  }catch(err){
+    msg('viajeMsg','Error generando el certificado: ' + (err.message||err));
+  }finally{
+    cargando(false); actualizarEstado();
+  }
+}
+
+let certActual = {id:'', data:''};
+function mostrarCertificado(v, imagen, sincronizado){
+  certActual = {id:v.id, data:imagen};
+  $('certId').textContent = v.id + ' · ' + v.placa;
+  const cv = $('certCanvas'), cx = cv.getContext('2d');
+  const im = new Image();
+  im.onload = ()=>{ cv.width=im.width; cv.height=im.height; cx.drawImage(im,0,0); };
+  im.src = imagen;
+  msg('certMsg', sincronizado
+      ? 'Certificado generado y guardado en el servidor.'
+      : 'Certificado generado. Está pendiente de sincronizar: se enviará solo cuando vuelva el internet.',
+      sincronizado ? 'ok' : 'warn');
+  $('certVerif').textContent = 'Folio de verificación: ' + v.qr;
+  ir('scCert');
+}
+
+function descargarCert(){
+  if(!certActual.data) return;
+  const a = document.createElement('a');
+  a.href = certActual.data;
+  a.download = 'CERTIFICADO_' + certActual.id + '.jpg';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function compartirCert(){
+  if(!certActual.data) return;
+  try{
+    const blob = await (await fetch(certActual.data)).blob();
+    const file = new File([blob], 'CERTIFICADO_'+certActual.id+'.jpg', {type:'image/jpeg'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'Certificado de viaje '+certActual.id});
+    } else descargarCert();
+  }catch(e){ descargarCert(); }
+}
+
+/* ---------- render del certificado ---------- */
+async function renderCertificado(v){
+  const W = 1080;
+  const c = document.createElement('canvas');
+  const x = c.getContext('2d');
+  const NAVY='#131C3D', BLUE='#2A50A0', RED='#D02128', GRIS='#5C6480', LINEA='#DCE0EA';
+
+  const [logo, mapE, mapS, imgE, imgS] = await Promise.all([
+    cargarImg(LOGO_SRC, false),
+    mapaCanvas(v.entrada.lat, v.entrada.lon, 420, 260, 16),
+    mapaCanvas(v.salida.lat,  v.salida.lon,  420, 260, 16),
+    cargarImg(v.entrada.foto, false),
+    cargarImg(v.salida.foto,  false)
+  ]);
+
+  // alto exacto: cabecera + datos + 2 bloques + pie
+  const ALTO_BLOQUE = 60 + 380 + 34;
+  const H = 285 + 224 + ALTO_BLOQUE*2 + 33 + 330;
+  c.width = W; c.height = H;
+  x.fillStyle = '#FFFFFF'; x.fillRect(0,0,W,H);
+
+  /* -- cabecera -- */
+  x.fillStyle = NAVY; x.fillRect(0,0,W,230);
+  if(logo){
+    const s = 150/Math.max(logo.width, logo.height);
+    x.drawImage(logo, 44, 40, logo.width*s, logo.height*s);
+  } else {
+    x.fillStyle = BLUE; x.font='800 76px system-ui,Arial'; x.fillText('P', 60, 150);
+  }
+  x.fillStyle='#fff'; x.textBaseline='alphabetic';
+  x.font = '800 40px system-ui,Arial';
+  x.fillText('CERTIFICADO DE VIAJE', 220, 108);
+  x.font = '500 21px system-ui,Arial'; x.fillStyle='rgba(255,255,255,.68)';
+  x.fillText(EMPRESA + '  ·  Trazabilidad con evidencia georreferenciada', 220, 142);
+  x.font = '700 23px system-ui,Arial'; x.fillStyle='#fff';
+  x.fillText('Folio ' + v.id, 220, 182);
+  x.fillStyle = RED; x.fillRect(0,230,W,9);
+
+  let y = 285;
+
+  /* -- datos generales -- */
+  const caja = (yy, hh) => { x.fillStyle='#F5F7FB'; redondo(x,44,yy,W-88,hh,14); x.fill();
+                             x.strokeStyle=LINEA; x.lineWidth=1.5; redondo(x,44,yy,W-88,hh,14); x.stroke(); };
+  caja(y, 190);
+  const campo = (px,py,lab,val,tam)=>{
+    x.fillStyle=GRIS; x.font='700 15px system-ui,Arial';
+    x.fillText(lab.toUpperCase(), px, py);
+    x.fillStyle=NAVY; x.font='700 '+(tam||27)+'px system-ui,Arial';
+    x.fillText(val||'—', px, py+34);
+  };
+  campo(76, y+42, 'Conductor', v.conductor, 26);
+  campo(76, y+118,'Usuario',   v.usuario,   22);
+  campo(560, y+42, 'Placa del vehículo', (v.placa||'—'), 34);
+  campo(560, y+118,'Peso neto báscula', (v.peso!==''? Number(v.peso).toLocaleString('es-CO')+' kg' : '—'), 26);
+  y += 224;
+
+  /* -- bloques entrada / salida -- */
+  const bloque = async (titulo, ev, img, mapa, color) => {
+    x.fillStyle = color; redondo(x,44,y,W-88,44,12); x.fill();
+    x.fillStyle='#fff'; x.font='800 21px system-ui,Arial';
+    x.fillText(titulo, 66, y+30);
+    x.textAlign='right';
+    x.font='600 19px system-ui,Arial'; x.fillStyle='rgba(255,255,255,.9)';
+    x.fillText(fmtFecha(ev.fecha), W-66, y+30);
+    x.textAlign='left';
+    y += 60;
+
+    const fw = 520, fh = 380;
+    x.fillStyle='#EEF1F6'; redondo(x,44,y,fw,fh,12); x.fill();
+    if(img){
+      x.save(); redondo(x,44,y,fw,fh,12); x.clip();
+      const r = Math.max(fw/img.width, fh/img.height);
+      const dw = img.width*r, dh = img.height*r;
+      x.drawImage(img, 44+(fw-dw)/2, y+(fh-dh)/2, dw, dh);
+      x.restore();
+    } else {
+      x.fillStyle=GRIS; x.font='600 17px system-ui,Arial'; x.textAlign='center';
+      x.fillText('Fotografía no disponible', 44+fw/2, y+fh/2); x.textAlign='left';
+    }
+    x.strokeStyle=LINEA; x.lineWidth=1.5; redondo(x,44,y,fw,fh,12); x.stroke();
+
+    const mx = 44+fw+24, mw = W-88-fw-24;
+    x.save(); redondo(x,mx,y,mw,260,12); x.clip();
+    x.drawImage(mapa, mx, y, mw, 260); x.restore();
+    x.strokeStyle=LINEA; redondo(x,mx,y,mw,260,12); x.stroke();
+
+    x.fillStyle=GRIS; x.font='700 14px system-ui,Arial';
+    x.fillText('COORDENADAS GPS', mx, y+292);
+    x.fillStyle=NAVY; x.font='700 20px system-ui,Arial';
+    x.fillText(fmtCoord(ev.lat, ev.lon), mx, y+320);
+    x.fillStyle=GRIS; x.font='600 15px system-ui,Arial';
+    x.fillText('Precisión ± ' + (ev.precision?Math.round(ev.precision):'—') + ' m', mx, y+352);
+    y += fh + 34;
+  };
+
+  await bloque('HORA DE ENTRADA', v.entrada, imgE, mapE, BLUE);
+  await bloque('HORA DE SALIDA',  v.salida,  imgS, mapS, NAVY);
+
+  /* -- pie con QR -- */
+  const pieY = H - 330;
+  x.fillStyle = NAVY; x.fillRect(0, pieY, W, H-pieY);
+  x.fillStyle = RED;  x.fillRect(0, pieY, W, 7);
+
+  const urlVer = API_URL + '?v=' + v.qr;
+  const qrCanvas = qrACanvas(urlVer, 210);
+  if(qrCanvas){
+    x.fillStyle='#fff'; redondo(x, 60, pieY+50, 230, 230, 12); x.fill();
+    x.drawImage(qrCanvas, 70, pieY+60, 210, 210);
+  }
+  x.fillStyle='#fff'; x.font='800 25px system-ui,Arial';
+  x.fillText('VERIFICACIÓN DE AUTENTICIDAD', 320, pieY+92);
+  x.fillStyle='rgba(255,255,255,.72)'; x.font='500 17px system-ui,Arial';
+  x.fillText('Escanee el código QR para validar este certificado', 320, pieY+126);
+  x.fillText('directamente contra el sistema Pomar Horti.', 320, pieY+152);
+  x.fillStyle='#fff'; x.font='700 18px system-ui,Arial';
+  x.fillText('Folio: ' + v.qr, 320, pieY+192);
+  x.fillStyle='rgba(255,255,255,.6)'; x.font='500 15px system-ui,Arial';
+  x.fillText('Emitido: ' + fmtFecha(new Date()) + '  ·  ' + APP_NOM, 320, pieY+226);
+  x.fillText('Documento generado automáticamente. No requiere firma.', 320, pieY+252);
+
+  return c;
+}
+
+function redondo(x, px, py, w, h, r){
+  x.beginPath();
+  x.moveTo(px+r, py);
+  x.arcTo(px+w, py,   px+w, py+h, r);
+  x.arcTo(px+w, py+h, px,   py+h, r);
+  x.arcTo(px,   py+h, px,   py,   r);
+  x.arcTo(px,   py,   px+w, py,   r);
+  x.closePath();
+}
+
+function qrACanvas(texto, size){
+  try{
+    const q = PomarQR(texto);
+    const n = q.size;
+    const cell = Math.max(2, Math.floor(size/(n+8)));
+    const lado = cell*(n+8);
+    const c = document.createElement('canvas'); c.width=lado; c.height=lado;
+    const x = c.getContext('2d');
+    x.fillStyle='#FFFFFF'; x.fillRect(0,0,lado,lado);
+    x.fillStyle='#131C3D';
+    for(let r=0;r<n;r++) for(let col=0;col<n;col++)
+      if(q.isDark(r,col)) x.fillRect((col+4)*cell, (r+4)*cell, cell, cell);
+    return c;
+  }catch(e){ console.warn('QR', e); return null; }
+}
+
+/* ================================================================
+   9. HISTÓRICO Y ADMINISTRACIÓN
+   ================================================================ */
+async function abrirHistorico(refrescar){
+  ir('scHist');
+  $('histTitulo').textContent = S.sesion.rol==='admin' ? 'Todos los viajes' : 'Mis viajes';
+  $('adminTools').style.display = S.sesion.rol==='admin' ? 'block' : 'none';
+  $('histSub').textContent = 'Cargando…';
+  $('histLista').innerHTML = '';
+
+  if(!enLinea()){
+    $('histSub').textContent = 'Sin conexión';
+    $('histLista').innerHTML = '<div class="empty"><div class="big">📶</div>No hay conexión.<br>El histórico se consulta en línea.</div>';
+    return;
+  }
+  const r = await api({accion:'misViajes', token:S.sesion.token, limite:300});
+  if(!r || !r.ok){
+    $('histSub').textContent = 'Error';
+    $('histLista').innerHTML = '<div class="empty"><div class="big">⚠</div>' + ((r&&r.error)||'No se pudo consultar') + '</div>';
+    return;
+  }
+  S.viajes = r.viajes || [];
+  $('histSub').textContent = S.viajes.length + ' viaje(s)' + (S.sesion.rol==='admin' ? ' · todos los conductores' : '');
+  pintarHist(S.viajes);
+}
+
+function pintarHist(lista){
+  const cont = $('histLista');
+  if(!lista.length){
+    cont.innerHTML = '<div class="empty"><div class="big">🗂</div>Todavía no hay viajes registrados.</div>';
+    return;
+  }
+  cont.innerHTML = lista.map(v => {
+    const ok = v.estado==='COMPLETADO';
+    return '<div class="row" onclick="verDetalle(\'' + v.id + '\')">' +
+      '<div class="ic">' + (ok ? '✅' : '🕒') + '</div>' +
+      '<div class="info"><b>' + (v.placa || 'Sin placa') + ' · ' + (v.peso!=='' && v.peso!==null ? Number(v.peso).toLocaleString('es-CO')+' kg' : '—') + '</b>' +
+      '<span>' + v.id + ' · ' + fmtFecha(v.entrada.fecha || v.creado) + '</span>' +
+      '<span>' + (S.sesion.rol==='admin' ? v.conductor + ' (' + v.usuario + ')' : (ok ? 'Certificado' : 'En curso')) + '</span></div>' +
+      '<div class="chev">›</div></div>';
+  }).join('');
+}
+
+function filtrarHist(){
+  const q = $('histBuscar').value.toLowerCase().trim();
+  if(!q) return pintarHist(S.viajes);
+  pintarHist(S.viajes.filter(v =>
+    [v.id, v.placa, v.conductor, v.usuario, v.estado].join(' ').toLowerCase().indexOf(q) >= 0));
+}
+
+async function verDetalle(id){
+  const v = S.viajes.filter(a=>a.id===id)[0];
+  if(!v) return;
+  $('detId').textContent = v.id;
+  const geo = (e,n) =>
+    '<div class="card"><h3>' + n + '</h3>' +
+    (e.foto ? '<div class="thumb" style="margin-top:10px"><img src="'+e.foto+'" alt="" referrerpolicy="no-referrer"></div>' : '') +
+    '<canvas class="minimap" id="det_'+n.toLowerCase()+'"></canvas>' +
+    '<div class="meta">' +
+      '<div><small>Hora</small><b>'+fmtFecha(e.fecha)+'</b></div>' +
+      '<div><small>Precisión</small><b>'+(e.precision?'± '+Math.round(e.precision)+' m':'—')+'</b></div>' +
+      '<div style="grid-column:1/-1"><small>Coordenadas</small><b>'+fmtCoord(e.lat,e.lon)+'</b></div>' +
+    '</div>' +
+    (e.lat ? '<a class="link" style="display:block;text-align:center" href="https://www.google.com/maps?q='+e.lat+','+e.lon+'" target="_blank">Abrir en Google Maps</a>' : '') +
+    '</div>';
+
+  $('detCont').innerHTML =
+    '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<div><h3>' + (v.placa||'—') + '</h3><p>' + (v.peso!==''?Number(v.peso).toLocaleString('es-CO')+' kg':'—') + ' · peso neto</p></div>' +
+      '<span class="pill ' + (v.estado==='COMPLETADO'?'ok':'curso') + '">' + (v.estado==='COMPLETADO'?'Certificado':'En curso') + '</span>' +
+    '</div><div class="meta" style="margin-top:12px">' +
+      '<div><small>Conductor</small><b>'+v.conductor+'</b></div>' +
+      '<div><small>Usuario</small><b>'+v.usuario+'</b></div>' +
+      '<div style="grid-column:1/-1"><small>Folio de verificación</small><b>'+(v.qr||'—')+'</b></div>' +
+    '</div></div>' +
+    geo(v.entrada,'Entrada') + geo(v.salida,'Salida') +
+    (v.certificado
+      ? '<a class="btn" style="text-decoration:none" href="'+v.certificado+'" target="_blank">⬇ Descargar certificado</a>'
+      : '<div class="msg warn on">Este viaje todavía no tiene certificado emitido.</div>') +
+    (v.qr ? '<a class="btn ghost" style="text-decoration:none" href="'+API_URL+'?v='+v.qr+'" target="_blank">Verificar autenticidad</a>' : '');
+
+  ir('scDetalle');
+  if(v.entrada.lat) dibujarMiniMapa('det_entrada', v.entrada.lat, v.entrada.lon);
+  if(v.salida.lat)  dibujarMiniMapa('det_salida',  v.salida.lat,  v.salida.lon);
+}
+
+function abrirAdmin(){ abrirHistorico(); }
+
+async function descargarCSV(){
+  cargando(true,'Generando CSV…');
+  const r = await api({accion:'exportarCSV', token:S.sesion.token});
+  cargando(false);
+  if(!r || !r.ok) return toast((r&&r.error)||'No se pudo exportar');
+  const blob = new Blob(['﻿' + r.csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'PomarHorti_viajes_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+
+async function verUsuarios(){
+  cargando(true,'Consultando usuarios…');
+  const r = await api({accion:'listarUsuarios', token:S.sesion.token});
+  cargando(false);
+  if(!r || !r.ok) return toast((r&&r.error)||'No se pudo consultar');
+  $('histSub').textContent = (r.usuarios||[]).length + ' usuario(s)';
+  $('histLista').innerHTML = (r.usuarios||[]).map(u =>
+    '<div class="row"><div class="ic">👤</div><div class="info"><b>'+u.nombre+'</b>' +
+    '<span>Usuario: '+u.usuario+' · '+(u.rol||'conductor')+'</span>' +
+    '<span>Creado: '+fmtFecha(u.creado)+' · Último ingreso: '+fmtFecha(u.ultimo_ingreso)+'</span></div></div>'
+  ).join('') || '<div class="empty">Sin usuarios registrados.</div>';
+}
+
+/* ================================================================
+   10. ARRANQUE
+   ================================================================ */
+(async function inicio(){
+  try{ DB = await abrirDB(); }catch(e){ console.warn('IndexedDB no disponible', e); }
+  await actualizarEstado();
+
+  const ses = await kvGet('sesion');
+  if(ses && ses.token){
+    S.sesion = ses; S.rol = ses.rol;
+    await entrarApp();
+    if(enLinea()){
+      const r = await api({accion:'sesion', token:ses.token});
+      if(r && !r.ok && !r.red){ S.sesion=null; await kvDel('sesion'); ir('scBienvenida'); toast('La sesión expiró, ingrese de nuevo'); }
+    }
+  } else {
+    ir('scBienvenida');
+  }
+})();
+
+window.addEventListener('beforeunload', e => {
+  if(S.viaje && S.viaje.estado !== 'COMPLETADO' && $('scViaje').classList.contains('on')){
+    e.preventDefault(); e.returnValue = '';
+  }
+});
+</script>
+</body>
+</html>
