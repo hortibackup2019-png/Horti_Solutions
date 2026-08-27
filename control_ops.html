@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Jornada Laboral</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --morado: #673AB7;
+    --morado-oscuro: #4B2E83;
+    --morado-claro: #EDE7F6;
+    --fondo: #F1EEF9;
+    --texto: #202124;
+    --texto-secundario: #5F6368;
+    --borde: #DADCE0;
+    --blanco: #FFFFFF;
+    --verde: #1E8E3E;
+    --rojo: #C5221F;
+    --radio: 8px;
+    --sombra: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family: 'Roboto', Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-bottom: 60px;
+  }
+  header.barra{
+    width:100%;
+    background: var(--morado);
+    color:#fff;
+    padding: 18px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow: var(--sombra);
+  }
+  header.barra h1{
+    font-size: 18px;
+    font-weight:500;
+    margin:0;
+    letter-spacing: .2px;
+  }
+  header.barra .usuario-info{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    font-size:14px;
+  }
+  header.barra button{
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.6);
+    color:#fff;
+    padding:6px 14px;
+    border-radius: 4px;
+    cursor:pointer;
+    font-family:'Roboto',sans-serif;
+    font-size:13px;
+  }
+  header.barra button:hover{ background: rgba(255,255,255,.12); }
+
+  main{
+    width:100%;
+    max-width: 720px;
+    padding: 32px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+
+  .tarjeta{
+    background: var(--blanco);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    overflow:hidden;
+  }
+  .tarjeta .franja{
+    height:10px;
+    background: var(--morado);
+  }
+  .tarjeta .contenido{
+    padding: 28px 32px;
+  }
+  .tarjeta h2{
+    font-size:20px;
+    font-weight:500;
+    margin:0 0 6px 0;
+  }
+  .tarjeta p.subtitulo{
+    color: var(--texto-secundario);
+    font-size:14px;
+    margin:0 0 20px 0;
+    border-bottom:1px solid var(--borde);
+    padding-bottom:18px;
+  }
+
+  .campo{ margin-bottom:22px; }
+  .campo label{
+    display:block;
+    font-size:14px;
+    color: var(--texto);
+    margin-bottom:8px;
+  }
+  .campo input[type="text"], .campo input[type="password"]{
+    width:100%;
+    border:none;
+    border-bottom: 1px solid var(--borde);
+    padding: 8px 2px;
+    font-size:15px;
+    font-family:'Roboto',sans-serif;
+    background:transparent;
+    outline:none;
+  }
+  .campo input:focus{
+    border-bottom: 2px solid var(--morado);
+    padding-bottom:7px;
+  }
+
+  .fila-botones{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin-top:8px;
+  }
+  .boton-primario{
+    background: var(--morado);
+    color:#fff;
+    border:none;
+    padding:10px 26px;
+    border-radius:4px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    font-family:'Roboto',sans-serif;
+    letter-spacing:.3px;
+  }
+  .boton-primario:hover{ background: var(--morado-oscuro); }
+  .boton-primario:disabled{ background:#C6C6C6; cursor:not-allowed; }
+  .boton-secundario{
+    background: transparent;
+    color: var(--morado);
+    border:none;
+    padding:10px 18px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    font-family:'Roboto',sans-serif;
+  }
+  .boton-secundario:hover{ background: var(--morado-claro); border-radius:4px; }
+
+  .enlace-cambio{
+    text-align:center;
+    font-size:14px;
+    color: var(--texto-secundario);
+    margin-top:8px;
+  }
+  .enlace-cambio a{ color: var(--morado); text-decoration:none; cursor:pointer; font-weight:500; }
+
+  .mensaje{
+    font-size:13px;
+    padding:10px 14px;
+    border-radius:4px;
+    margin-bottom:18px;
+  }
+  .mensaje.error{ background:#FCE8E6; color:var(--rojo); }
+  .mensaje.exito{ background:#E6F4EA; color:var(--verde); }
+  .mensaje.info{ background:var(--morado-claro); color: var(--morado-oscuro); }
+
+  .oculto{ display:none !important; }
+
+  .estado-jornada{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14px;
+    padding:10px 14px;
+    border-radius:4px;
+    background: #F8F9FA;
+    border:1px solid var(--borde);
+    margin-bottom:20px;
+  }
+  .punto-estado{
+    width:10px;height:10px;border-radius:50%;
+    background:#9AA0A6;
+    flex-shrink:0;
+  }
+  .punto-estado.en-curso{ background:#F9AB00; }
+  .punto-estado.finalizado{ background: var(--verde); }
+  .punto-estado.pendiente-sync{ background: var(--rojo); }
+
+  .acciones-jornada{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .accion{
+    flex:1;
+    min-width:220px;
+    border:1px solid var(--borde);
+    border-radius: var(--radio);
+    padding:22px;
+    text-align:center;
+  }
+  .accion h3{
+    font-size:15px;
+    font-weight:500;
+    margin: 0 0 6px 0;
+  }
+  .accion p{
+    font-size:13px;
+    color: var(--texto-secundario);
+    margin:0 0 16px 0;
+    min-height:32px;
+  }
+
+  table.historial{
+    width:100%;
+    border-collapse: collapse;
+    font-size:13px;
+  }
+  table.historial th{
+    text-align:left;
+    color: var(--texto-secundario);
+    font-weight:500;
+    border-bottom:1px solid var(--borde);
+    padding:8px 6px;
+  }
+  table.historial td{
+    padding:10px 6px;
+    border-bottom:1px solid var(--borde);
+    vertical-align:middle;
+  }
+  table.historial a{ color: var(--morado); text-decoration:none; font-weight:500; }
+  .etiqueta-estado{
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:10px;
+    font-weight:500;
+  }
+  .etiqueta-estado.finalizado{ background:#E6F4EA; color:var(--verde); }
+  .etiqueta-estado.encurso{ background:#FEF7E0; color:#B06000; }
+
+  .vacio{
+    color: var(--texto-secundario);
+    font-size:13px;
+    padding: 16px 0;
+    text-align:center;
+  }
+
+  #entradaFoto{ display:none; }
+
+  footer.pie{
+    color: var(--texto-secundario);
+    font-size:12px;
+    margin-top: 12px;
+    text-align:center;
+  }
+
+  @media (max-width:480px){
+    .tarjeta .contenido{ padding:22px 18px; }
+    header.barra{ padding:14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <h1>Control de Jornada Laboral</h1>
+  <div class="usuario-info" id="cajaUsuario"></div>
+</header>
+
+<main>
+
+  <!-- ==================== PANTALLA DE ACCESO ==================== -->
+  <section id="pantallaAcceso">
+    <div class="tarjeta">
+      <div class="franja"></div>
+      <div class="contenido">
+        <div id="msjAcceso"></div>
+
+        <div id="bloqueLogin">
+          <h2>Iniciar sesión</h2>
+          <p class="subtitulo">Ingrese sus credenciales para registrar su jornada laboral.</p>
+          <div class="campo">
+            <label for="loginUsuario">Nombre de usuario</label>
+            <input type="text" id="loginUsuario" autocomplete="username">
+          </div>
+          <div class="campo">
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="loginPassword" autocomplete="current-password">
+          </div>
+          <div class="fila-botones">
+            <button class="boton-primario" id="btnLogin">Iniciar sesión</button>
+          </div>
+          <p class="enlace-cambio">¿No tiene una cuenta? <a id="irARegistro">Crear una cuenta</a></p>
+        </div>
+
+        <div id="bloqueRegistro" class="oculto">
+          <h2>Crear cuenta</h2>
+          <p class="subtitulo">Defina un usuario y una contraseña para registrar sus jornadas.</p>
+          <div class="campo">
+            <label for="regUsuario">Nombre de usuario</label>
+            <input type="text" id="regUsuario" autocomplete="username">
+          </div>
+          <div class="campo">
+            <label for="regPassword">Contraseña</label>
+            <input type="password" id="regPassword" autocomplete="new-password">
+          </div>
+          <div class="campo">
+            <label for="regPassword2">Confirmar contraseña</label>
+            <input type="password" id="regPassword2" autocomplete="new-password">
+          </div>
+          <div class="fila-botones">
+            <button class="boton-primario" id="btnRegistro">Crear cuenta</button>
+          </div>
+          <p class="enlace-cambio">¿Ya tiene una cuenta? <a id="irALogin">Iniciar sesión</a></p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PANTALLA PRINCIPAL ==================== -->
+  <section id="pantallaPrincipal" class="oculto">
+
+    <div class="tarjeta">
+      <div class="franja"></div>
+      <div class="contenido">
+        <h2>Jornada actual</h2>
+        <p class="subtitulo">Registre el inicio y el fin de su labor mediante una fotografía georreferenciada.</p>
+
+        <div id="msjPrincipal"></div>
+
+        <div class="estado-jornada" id="cajaEstado">
+          <div class="punto-estado" id="puntoEstado"></div>
+          <span id="textoEstado">No hay una jornada iniciada.</span>
+        </div>
+
+        <div class="acciones-jornada">
+          <div class="accion">
+            <h3>Inicio de labor</h3>
+            <p>Capture una fotografía con su ubicación actual para iniciar la jornada.</p>
+            <button class="boton-primario" id="btnInicio">Registrar inicio</button>
+          </div>
+          <div class="accion">
+            <h3>Fin de labor</h3>
+            <p>Disponible una vez registrado el inicio de la jornada.</p>
+            <button class="boton-primario" id="btnFin" disabled>Registrar fin</button>
+          </div>
+        </div>
+
+        <input type="file" id="entradaFoto" accept="image/*" capture="environment">
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      <div class="franja"></div>
+      <div class="contenido">
+        <h2>Historial de jornadas</h2>
+        <p class="subtitulo">Únicamente el usuario que registró cada jornada puede consultarla.</p>
+        <div id="contenedorHistorial">
+          <p class="vacio">Cargando historial…</p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="pie">Los datos de esta aplicación se almacenan en una hoja de cálculo institucional.</footer>
+
+</main>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN
+   ============================================================ */
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbyzGJmfpNUj3xNZbrmqza3Us6UfofVni84L6-PPsrqToFzfvWWiv0G-GzaVtfyY51VfzQ/exec';
+
+/* ============================================================
+   UTILIDADES GENERALES
+   ============================================================ */
+function claveViaje(usuario){ return 'jl_viaje_activo_' + usuario; }
+function claveHistorial(usuario){ return 'jl_historial_' + usuario; }
+const claveSesion = 'jl_sesion';
+
+function obtenerViajeActivo(usuario){
+  const raw = localStorage.getItem(claveViaje(usuario));
+  return raw ? JSON.parse(raw) : null;
+}
+function guardarViajeActivo(usuario, viaje){
+  localStorage.setItem(claveViaje(usuario), JSON.stringify(viaje));
+}
+function borrarViajeActivo(usuario){
+  localStorage.removeItem(claveViaje(usuario));
+}
+
+async function hashTexto(texto){
+  const datos = new TextEncoder().encode(texto);
+  const buffer = await crypto.subtle.digest('SHA-256', datos);
+  return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function generarId(){
+  if(crypto.randomUUID) return crypto.randomUUID();
+  return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+}
+
+function formatearFecha(iso){
+  if(!iso) return '—';
+  const f = new Date(iso);
+  if(isNaN(f.getTime())) return iso;
+  return f.toLocaleString('es-CO', { dateStyle:'medium', timeStyle:'short' });
+}
+
+async function enviarAlServidor(payload){
+  const respuesta = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  if(!respuesta.ok) throw new Error('Respuesta del servidor no válida.');
+  return respuesta.json();
+}
+
+function mostrarMensaje(contenedorId, texto, tipo){
+  const contenedor = document.getElementById(contenedorId);
+  if(!texto){ contenedor.innerHTML = ''; return; }
+  contenedor.innerHTML = `<div class="mensaje ${tipo}">${texto}</div>`;
+}
+
+function obtenerUbicacion(){
+  return new Promise((resolve, reject) => {
+    if(!navigator.geolocation){
+      reject(new Error('El dispositivo no permite obtener la ubicación.'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      err => reject(new Error('No fue posible obtener la ubicación. Verifique los permisos de localización.')),
+      { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+    );
+  });
+}
+
+function capturarFoto(){
+  return new Promise((resolve, reject) => {
+    const entrada = document.getElementById('entradaFoto');
+    entrada.value = '';
+    const manejador = () => {
+      entrada.removeEventListener('change', manejador);
+      if(entrada.files && entrada.files[0]){
+        resolve(entrada.files[0]);
+      } else {
+        reject(new Error('No se capturó ninguna fotografía.'));
+      }
+    };
+    entrada.addEventListener('change', manejador, { once:true });
+    entrada.click();
+  });
+}
+
+function comprimirImagen(archivo, anchoMaximo = 1000, calidad = 0.7){
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let ancho = img.width, alto = img.height;
+        if(ancho > anchoMaximo){
+          alto = Math.round(alto * (anchoMaximo / ancho));
+          ancho = anchoMaximo;
+        }
+        const lienzo = document.createElement('canvas');
+        lienzo.width = ancho; lienzo.height = alto;
+        lienzo.getContext('2d').drawImage(img, 0, 0, ancho, alto);
+        resolve(lienzo.toDataURL('image/jpeg', calidad));
+      };
+      img.onerror = () => reject(new Error('No se pudo procesar la imagen capturada.'));
+      img.src = e.target.result;
+    };
+    lector.onerror = () => reject(new Error('No se pudo leer la imagen capturada.'));
+    lector.readAsDataURL(archivo);
+  });
+}
+
+/* ============================================================
+   ESTADO DE SESIÓN
+   ============================================================ */
+let usuarioActual = localStorage.getItem(claveSesion) || null;
+
+/* ============================================================
+   PANTALLA DE ACCESO — REGISTRO E INICIO DE SESIÓN
+   ============================================================ */
+document.getElementById('irARegistro').addEventListener('click', () => {
+  mostrarMensaje('msjAcceso', '', '');
+  document.getElementById('bloqueLogin').classList.add('oculto');
+  document.getElementById('bloqueRegistro').classList.remove('oculto');
+});
+document.getElementById('irALogin').addEventListener('click', () => {
+  mostrarMensaje('msjAcceso', '', '');
+  document.getElementById('bloqueRegistro').classList.add('oculto');
+  document.getElementById('bloqueLogin').classList.remove('oculto');
+});
+
+document.getElementById('btnRegistro').addEventListener('click', async () => {
+  const usuario = document.getElementById('regUsuario').value.trim().toLowerCase();
+  const pass1 = document.getElementById('regPassword').value;
+  const pass2 = document.getElementById('regPassword2').value;
+  mostrarMensaje('msjAcceso', '', '');
+
+  if(!usuario || !pass1){
+    mostrarMensaje('msjAcceso', 'Debe indicar un usuario y una contraseña.', 'error'); return;
+  }
+  if(pass1.length < 4){
+    mostrarMensaje('msjAcceso', 'La contraseña debe tener al menos 4 caracteres.', 'error'); return;
+  }
+  if(pass1 !== pass2){
+    mostrarMensaje('msjAcceso', 'Las contraseñas no coinciden.', 'error'); return;
+  }
+
+  const boton = document.getElementById('btnRegistro');
+  boton.disabled = true; boton.textContent = 'Creando cuenta…';
+  try{
+    const passwordHash = await hashTexto(pass1);
+    const resultado = await enviarAlServidor({ action:'register', usuario, passwordHash });
+    if(resultado.ok){
+      mostrarMensaje('msjAcceso', 'Cuenta creada correctamente. Ya puede iniciar sesión.', 'exito');
+      document.getElementById('bloqueRegistro').classList.add('oculto');
+      document.getElementById('bloqueLogin').classList.remove('oculto');
+      document.getElementById('loginUsuario').value = usuario;
+    } else {
+      mostrarMensaje('msjAcceso', resultado.error || 'No fue posible crear la cuenta.', 'error');
+    }
+  } catch(err){
+    mostrarMensaje('msjAcceso', 'No fue posible conectar con el servidor. Verifique su conexión a internet.', 'error');
+  } finally {
+    boton.disabled = false; boton.textContent = 'Crear cuenta';
+  }
+});
+
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const usuario = document.getElementById('loginUsuario').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPassword').value;
+  mostrarMensaje('msjAcceso', '', '');
+
+  if(!usuario || !pass){
+    mostrarMensaje('msjAcceso', 'Debe indicar su usuario y su contraseña.', 'error'); return;
+  }
+
+  const boton = document.getElementById('btnLogin');
+  boton.disabled = true; boton.textContent = 'Verificando…';
+  try{
+    const passwordHash = await hashTexto(pass);
+    const resultado = await enviarAlServidor({ action:'login', usuario, passwordHash });
+    if(resultado.ok){
+      usuarioActual = usuario;
+      localStorage.setItem(claveSesion, usuario);
+      iniciarPantallaPrincipal();
+    } else {
+      mostrarMensaje('msjAcceso', resultado.error || 'No fue posible iniciar sesión.', 'error');
+    }
+  } catch(err){
+    mostrarMensaje('msjAcceso', 'No fue posible conectar con el servidor. Verifique su conexión a internet.', 'error');
+  } finally {
+    boton.disabled = false; boton.textContent = 'Iniciar sesión';
+  }
+});
+
+/* ============================================================
+   CIERRE DE SESIÓN
+   ============================================================ */
+function cerrarSesion(){
+  usuarioActual = null;
+  localStorage.removeItem(claveSesion);
+  document.getElementById('pantallaPrincipal').classList.add('oculto');
+  document.getElementById('pantallaAcceso').classList.remove('oculto');
+  document.getElementById('cajaUsuario').innerHTML = '';
+  document.getElementById('loginUsuario').value = '';
+  document.getElementById('loginPassword').value = '';
+}
+
+/* ============================================================
+   PANTALLA PRINCIPAL
+   ============================================================ */
+function iniciarPantallaPrincipal(){
+  document.getElementById('pantallaAcceso').classList.add('oculto');
+  document.getElementById('pantallaPrincipal').classList.remove('oculto');
+  document.getElementById('cajaUsuario').innerHTML =
+    `<span>${usuarioActual}</span><button id="btnCerrarSesion">Cerrar sesión</button>`;
+  document.getElementById('btnCerrarSesion').addEventListener('click', cerrarSesion);
+
+  actualizarEstadoJornada();
+  cargarHistorial();
+  sincronizarViajeActivo();
+}
+
+function actualizarEstadoJornada(){
+  const viaje = obtenerViajeActivo(usuarioActual);
+  const punto = document.getElementById('puntoEstado');
+  const texto = document.getElementById('textoEstado');
+  const btnInicio = document.getElementById('btnInicio');
+  const btnFin = document.getElementById('btnFin');
+
+  punto.className = 'punto-estado';
+
+  if(!viaje){
+    texto.textContent = 'No hay una jornada iniciada.';
+    btnInicio.disabled = false;
+    btnFin.disabled = true;
+    return;
+  }
+
+  if(viaje.estadoLocal === 'iniciado'){
+    punto.classList.add(viaje.inicio.sincronizado ? 'en-curso' : 'pendiente-sync');
+    texto.textContent = `Jornada iniciada a las ${formatearFecha(viaje.inicio.fecha)}` +
+      (viaje.inicio.sincronizado ? '.' : ' (pendiente de sincronizar).');
+    btnInicio.disabled = true;
+    btnFin.disabled = false;
+  } else if(viaje.estadoLocal === 'finalizado_pendiente_cert' || viaje.estadoLocal === 'sincronizando'){
+    punto.classList.add('pendiente-sync');
+    texto.textContent = 'Jornada finalizada. Generando y sincronizando el certificado…';
+    btnInicio.disabled = true;
+    btnFin.disabled = true;
+  } else {
+    punto.classList.add('finalizado');
+    texto.textContent = 'Jornada completada.';
+    btnInicio.disabled = false;
+    btnFin.disabled = true;
+  }
+}
+
+/* ============================================================
+   INICIO DE LABOR
+   ============================================================ */
+document.getElementById('btnInicio').addEventListener('click', async () => {
+  mostrarMensaje('msjPrincipal', '', '');
+  const boton = document.getElementById('btnInicio');
+  boton.disabled = true;
+  try{
+    mostrarMensaje('msjPrincipal', 'Obteniendo su ubicación…', 'info');
+    const ubicacion = await obtenerUbicacion();
+
+    mostrarMensaje('msjPrincipal', 'Capture la fotografía de inicio de labor.', 'info');
+    const archivo = await capturarFoto();
+    const fotoData = await comprimirImagen(archivo);
+
+    const viaje = {
+      tripId: generarId(),
+      estadoLocal: 'iniciado',
+      inicio: {
+        fecha: new Date().toISOString(),
+        lat: ubicacion.lat,
+        lng: ubicacion.lng,
+        fotoData: fotoData,
+        sincronizado: false
+      },
+      fin: null,
+      certificado: null
+    };
+    guardarViajeActivo(usuarioActual, viaje);
+    mostrarMensaje('msjPrincipal', 'Inicio de labor registrado. Ya puede finalizar su jornada cuando corresponda.', 'exito');
+    actualizarEstadoJornada();
+    sincronizarViajeActivo();
+  } catch(err){
+    mostrarMensaje('msjPrincipal', err.message || 'No fue posible registrar el inicio de labor.', 'error');
+  } finally {
+    actualizarEstadoJornada();
+  }
+});
+
+/* ============================================================
+   FIN DE LABOR
+   ============================================================ */
+document.getElementById('btnFin').addEventListener('click', async () => {
+  mostrarMensaje('msjPrincipal', '', '');
+  const viaje = obtenerViajeActivo(usuarioActual);
+  if(!viaje || viaje.estadoLocal !== 'iniciado'){
+    mostrarMensaje('msjPrincipal', 'No hay una jornada en curso.', 'error');
+    return;
+  }
+  const boton = document.getElementById('btnFin');
+  boton.disabled = true;
+  try{
+    mostrarMensaje('msjPrincipal', 'Obteniendo su ubicación…', 'info');
+    const ubicacion = await obtenerUbicacion();
+
+    mostrarMensaje('msjPrincipal', 'Capture la fotografía de fin de labor.', 'info');
+    const archivo = await capturarFoto();
+    const fotoData = await comprimirImagen(archivo);
+
+    viaje.fin = {
+      fecha: new Date().toISOString(),
+      lat: ubicacion.lat,
+      lng: ubicacion.lng,
+      fotoData: fotoData,
+      sincronizado: false
+    };
+    viaje.estadoLocal = 'finalizado_pendiente_cert';
+    guardarViajeActivo(usuarioActual, viaje);
+
+    mostrarMensaje('msjPrincipal', 'Fin de labor registrado. Generando el certificado de jornada…', 'info');
+    actualizarEstadoJornada();
+
+    await generarCertificado(viaje);
+    guardarViajeActivo(usuarioActual, viaje);
+
+    await sincronizarViajeActivo();
+  } catch(err){
+    mostrarMensaje('msjPrincipal', err.message || 'No fue posible registrar el fin de labor.', 'error');
+    actualizarEstadoJornada();
+  }
+});
+
+/* ============================================================
+   GENERACIÓN DEL CERTIFICADO (PDF)
+   ============================================================ */
+async function generarCertificado(viaje){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'pt', format:'a4' });
+  const margen = 50;
+  let y = 60;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.text('CERTIFICADO DE JORNADA LABORAL', 297.5, y, { align:'center' });
+  y += 30;
+
+  doc.setDrawColor(103,58,183);
+  doc.setLineWidth(1.5);
+  doc.line(margen, y, 545, y);
+  y += 28;
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(11);
+
+  const duracionMs = new Date(viaje.fin.fecha) - new Date(viaje.inicio.fecha);
+  const horas = Math.floor(duracionMs / 3600000);
+  const minutos = Math.floor((duracionMs % 3600000) / 60000);
+
+  const filas = [
+    ['Usuario responsable:', usuarioActual],
+    ['Identificador de jornada:', viaje.tripId],
+    ['Inicio de labor:', formatearFecha(viaje.inicio.fecha)],
+    ['Ubicación de inicio:', `Lat ${viaje.inicio.lat.toFixed(6)}, Lng ${viaje.inicio.lng.toFixed(6)}`],
+    ['Fin de labor:', formatearFecha(viaje.fin.fecha)],
+    ['Ubicación de fin:', `Lat ${viaje.fin.lat.toFixed(6)}, Lng ${viaje.fin.lng.toFixed(6)}`],
+    ['Duración total:', `${horas} horas ${minutos} minutos`],
+    ['Fecha de generación:', formatearFecha(new Date().toISOString())]
+  ];
+
+  filas.forEach(([etiqueta, valor]) => {
+    doc.setFont('helvetica','bold');
+    doc.text(etiqueta, margen, y);
+    doc.setFont('helvetica','normal');
+    doc.text(String(valor), margen + 160, y);
+    y += 22;
+  });
+
+  y += 10;
+  doc.setFont('helvetica','bold');
+  doc.text('Fotografía de inicio', margen, y);
+  doc.text('Fotografía de fin', margen + 250, y);
+  y += 12;
+
+  try{ doc.addImage(viaje.inicio.fotoData, 'JPEG', margen, y, 200, 150); }catch(e){}
+  try{ doc.addImage(viaje.fin.fotoData, 'JPEG', margen + 250, y, 200, 150); }catch(e){}
+  y += 170;
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(95,99,104);
+  doc.text('Este certificado se generó automáticamente a partir de los registros fotográficos y de',
+    margen, y);
+  doc.text('geolocalización capturados por el usuario al inicio y al final de su jornada laboral.',
+    margen, y + 12);
+
+  const base64Completo = doc.output('datauristring');
+  viaje.certificado = {
+    pdfBase64: base64Completo,
+    url: null,
+    sincronizado: false
+  };
+}
+
+/* ============================================================
+   SINCRONIZACIÓN CON EL SERVIDOR (funciona sin conexión)
+   ============================================================ */
+let sincronizando = false;
+
+async function sincronizarViajeActivo(){
+  if(sincronizando) return;
+  if(!usuarioActual) return;
+  const viaje = obtenerViajeActivo(usuarioActual);
+  if(!viaje) return;
+
+  sincronizando = true;
+  try{
+    if(!viaje.inicio.sincronizado){
+      const resultado = await enviarAlServidor({
+        action:'startLabor',
+        usuario: usuarioActual,
+        tripId: viaje.tripId,
+        fecha: viaje.inicio.fecha,
+        lat: viaje.inicio.lat,
+        lng: viaje.inicio.lng,
+        fotoBase64: viaje.inicio.fotoData
+      });
+      if(resultado.ok){
+        viaje.inicio.sincronizado = true;
+        guardarViajeActivo(usuarioActual, viaje);
+        actualizarEstadoJornada();
+      } else {
+        mostrarMensaje('msjPrincipal', resultado.error || 'No fue posible sincronizar el inicio de labor.', 'error');
+        return;
+      }
+    }
+
+    if(viaje.fin && !viaje.fin.sincronizado){
+      const resultado = await enviarAlServidor({
+        action:'endLabor',
+        usuario: usuarioActual,
+        tripId: viaje.tripId,
+        fecha: viaje.fin.fecha,
+        lat: viaje.fin.lat,
+        lng: viaje.fin.lng,
+        fotoBase64: viaje.fin.fotoData
+      });
+      if(resultado.ok){
+        viaje.fin.sincronizado = true;
+        guardarViajeActivo(usuarioActual, viaje);
+      } else {
+        mostrarMensaje('msjPrincipal', resultado.error || 'No fue posible sincronizar el fin de labor.', 'error');
+        return;
+      }
+    }
+
+    if(viaje.certificado && !viaje.certificado.sincronizado){
+      const base64Puro = viaje.certificado.pdfBase64.split(',')[1] || viaje.certificado.pdfBase64.split('base64,')[1];
+      const resultado = await enviarAlServidor({
+        action:'saveCertificado',
+        usuario: usuarioActual,
+        tripId: viaje.tripId,
+        pdfBase64: base64Puro
+      });
+      if(resultado.ok){
+        viaje.certificado.sincronizado = true;
+        viaje.certificado.url = resultado.url;
+        viaje.estadoLocal = 'completo';
+        guardarViajeActivo(usuarioActual, viaje);
+        mostrarMensaje('msjPrincipal', 'La jornada se registró y el certificado quedó guardado correctamente.', 'exito');
+        borrarViajeActivo(usuarioActual);
+        cargarHistorial();
+      } else {
+        mostrarMensaje('msjPrincipal', resultado.error || 'No fue posible guardar el certificado.', 'error');
+      }
+    }
+  } catch(err){
+    mostrarMensaje('msjPrincipal',
+      'Sin conexión a internet. La información quedó guardada en este dispositivo y se sincronizará automáticamente al recuperar la conexión.',
+      'info');
+  } finally {
+    sincronizando = false;
+    actualizarEstadoJornada();
+  }
+}
+
+window.addEventListener('online', () => { sincronizarViajeActivo(); });
+setInterval(() => { sincronizarViajeActivo(); }, 30000);
+
+/* ============================================================
+   HISTORIAL DE JORNADAS (propio del usuario autenticado)
+   ============================================================ */
+async function cargarHistorial(){
+  const contenedor = document.getElementById('contenedorHistorial');
+  try{
+    const resultado = await enviarAlServidor({ action:'getHistorial', usuario: usuarioActual });
+    if(resultado.ok){
+      localStorage.setItem(claveHistorial(usuarioActual), JSON.stringify(resultado.viajes));
+      pintarHistorial(resultado.viajes);
+    } else {
+      pintarHistorial([]);
+    }
+  } catch(err){
+    const cache = localStorage.getItem(claveHistorial(usuarioActual));
+    if(cache){
+      pintarHistorial(JSON.parse(cache));
+    } else {
+      contenedor.innerHTML = '<p class="vacio">No fue posible cargar el historial sin conexión a internet.</p>';
+    }
+  }
+}
+
+function pintarHistorial(viajes){
+  const contenedor = document.getElementById('contenedorHistorial');
+  if(!viajes || viajes.length === 0){
+    contenedor.innerHTML = '<p class="vacio">Aún no se han registrado jornadas.</p>';
+    return;
+  }
+  let filas = '';
+  viajes.forEach(v => {
+    const estadoClase = v.estado === 'Finalizado' ? 'finalizado' : 'encurso';
+    filas += `<tr>
+      <td>${formatearFecha(v.inicioFecha)}</td>
+      <td>${v.finFecha ? formatearFecha(v.finFecha) : '—'}</td>
+      <td><span class="etiqueta-estado ${estadoClase}">${v.estado}</span></td>
+      <td>${v.certificadoURL ? `<a href="${v.certificadoURL}" target="_blank" rel="noopener">Ver certificado</a>` : '—'}</td>
+    </tr>`;
+  });
+  contenedor.innerHTML = `<table class="historial">
+    <thead><tr><th>Inicio</th><th>Fin</th><th>Estado</th><th>Certificado</th></tr></thead>
+    <tbody>${filas}</tbody>
+  </table>`;
+}
+
+/* ============================================================
+   ARRANQUE DE LA APLICACIÓN
+   ============================================================ */
+if(usuarioActual){
+  iniciarPantallaPrincipal();
+}
+</script>
+</body>
+</html>
