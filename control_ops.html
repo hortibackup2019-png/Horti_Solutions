@@ -9,15 +9,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
-    --morado: #673AB7;
-    --morado-oscuro: #4B2E83;
-    --morado-claro: #EDE7F6;
-    --fondo: #F1EEF9;
+    --morado: #0B8043;
+    --morado-oscuro: #06592C;
+    --morado-claro: #E6F4EA;
+    --fondo: #EFF6F1;
     --texto: #202124;
     --texto-secundario: #5F6368;
     --borde: #DADCE0;
     --blanco: #FFFFFF;
-    --verde: #1E8E3E;
+    --verde: #0B8043;
     --rojo: #C5221F;
     --radio: 8px;
     --sombra: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
@@ -256,7 +256,78 @@
     text-align:center;
   }
 
-  #entradaFoto{ display:none; }
+  .fondo-modal{
+    position:fixed;
+    inset:0;
+    background: rgba(32,33,36,.75);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    padding:16px;
+  }
+  .tarjeta-modal{
+    background:#fff;
+    border-radius: var(--radio);
+    width:100%;
+    max-width:480px;
+    overflow:hidden;
+    box-shadow: var(--sombra);
+  }
+  .tarjeta-modal .contenido-modal{
+    padding:22px 24px;
+  }
+  .tarjeta-modal h3{
+    font-size:16px;
+    font-weight:500;
+    margin:0 0 4px 0;
+  }
+  .tarjeta-modal p.ayuda-modal{
+    font-size:13px;
+    color: var(--texto-secundario);
+    margin:0 0 16px 0;
+  }
+  .visor-camara{
+    width:100%;
+    background:#000;
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:16px;
+    aspect-ratio: 4/3;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .visor-camara video, .visor-camara img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .campo-nota{ margin-bottom:16px; }
+  .campo-nota label{
+    display:block;
+    font-size:13px;
+    color: var(--texto);
+    margin-bottom:6px;
+  }
+  .campo-nota textarea{
+    width:100%;
+    border:1px solid var(--borde);
+    border-radius:4px;
+    padding:10px;
+    font-size:14px;
+    font-family:'Roboto',sans-serif;
+    resize:vertical;
+    min-height:56px;
+    outline:none;
+  }
+  .campo-nota textarea:focus{ border-color: var(--morado); }
+  .botones-modal{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+  }
 
   footer.pie{
     color: var(--texto-secundario);
@@ -348,7 +419,7 @@
         <div class="acciones-jornada">
           <div class="accion">
             <h3>Inicio de labor</h3>
-            <p>Capture una fotografía con su ubicación actual para iniciar la jornada.</p>
+            <p>Capture una fotografía georreferenciada y escriba una observación para iniciar la jornada.</p>
             <button class="boton-primario" id="btnInicio">Registrar inicio</button>
           </div>
           <div class="accion">
@@ -358,7 +429,6 @@
           </div>
         </div>
 
-        <input type="file" id="entradaFoto" accept="image/*" capture="environment">
       </div>
     </div>
 
@@ -378,6 +448,34 @@
   <footer class="pie">Los datos de esta aplicación se almacenan en una hoja de cálculo institucional.</footer>
 
 </main>
+
+<!-- ==================== MODAL DE CAPTURA DE FOTOGRAFÍA ==================== -->
+<div class="fondo-modal oculto" id="modalCamara">
+  <div class="tarjeta-modal">
+    <div class="contenido-modal">
+      <h3 id="tituloCamara">Fotografía de labor</h3>
+      <p class="ayuda-modal">La fotografía incluirá automáticamente la fecha, la ubicación y la observación escrita.</p>
+
+      <div class="visor-camara">
+        <video id="videoCamara" autoplay playsinline muted></video>
+        <img id="previewCamara" class="oculto" alt="Vista previa de la fotografía capturada">
+      </div>
+      <canvas id="lienzoCamara" class="oculto"></canvas>
+
+      <div class="campo-nota">
+        <label for="notaCamara">Observación</label>
+        <textarea id="notaCamara" placeholder="Escriba una observación para esta fotografía"></textarea>
+      </div>
+
+      <div class="botones-modal">
+        <button class="boton-secundario" id="btnCancelarCamara">Cancelar</button>
+        <button class="boton-primario" id="btnCapturar">Tomar fotografía</button>
+        <button class="boton-secundario oculto" id="btnRepetirFoto">Repetir</button>
+        <button class="boton-primario oculto" id="btnUsarFoto">Usar esta fotografía</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -450,44 +548,118 @@ function obtenerUbicacion(){
   });
 }
 
-function capturarFoto(){
+/**
+ * Abre la cámara del dispositivo directamente en el HTML (sin delegar a la
+ * app nativa de cámara), permite escribir una observación y, al capturar,
+ * estampa sobre la propia fotografía la fecha, la ubicación y la observación
+ * escrita. Devuelve { fotoData, nota }.
+ */
+function abrirCamara(titulo, ubicacion){
   return new Promise((resolve, reject) => {
-    const entrada = document.getElementById('entradaFoto');
-    entrada.value = '';
-    const manejador = () => {
-      entrada.removeEventListener('change', manejador);
-      if(entrada.files && entrada.files[0]){
-        resolve(entrada.files[0]);
-      } else {
-        reject(new Error('No se capturó ninguna fotografía.'));
-      }
-    };
-    entrada.addEventListener('change', manejador, { once:true });
-    entrada.click();
-  });
-}
+    const modal = document.getElementById('modalCamara');
+    const video = document.getElementById('videoCamara');
+    const canvas = document.getElementById('lienzoCamara');
+    const previa = document.getElementById('previewCamara');
+    const entradaNota = document.getElementById('notaCamara');
+    const btnCapturar = document.getElementById('btnCapturar');
+    const btnUsar = document.getElementById('btnUsarFoto');
+    const btnRepetir = document.getElementById('btnRepetirFoto');
+    const btnCancelar = document.getElementById('btnCancelarCamara');
 
-function comprimirImagen(archivo, anchoMaximo = 1000, calidad = 0.7){
-  return new Promise((resolve, reject) => {
-    const lector = new FileReader();
-    lector.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        let ancho = img.width, alto = img.height;
-        if(ancho > anchoMaximo){
-          alto = Math.round(alto * (anchoMaximo / ancho));
-          ancho = anchoMaximo;
-        }
-        const lienzo = document.createElement('canvas');
-        lienzo.width = ancho; lienzo.height = alto;
-        lienzo.getContext('2d').drawImage(img, 0, 0, ancho, alto);
-        resolve(lienzo.toDataURL('image/jpeg', calidad));
-      };
-      img.onerror = () => reject(new Error('No se pudo procesar la imagen capturada.'));
-      img.src = e.target.result;
-    };
-    lector.onerror = () => reject(new Error('No se pudo leer la imagen capturada.'));
-    lector.readAsDataURL(archivo);
+    document.getElementById('tituloCamara').textContent = titulo;
+    entradaNota.value = '';
+    previa.classList.add('oculto');
+    video.classList.remove('oculto');
+    btnCapturar.classList.remove('oculto');
+    btnUsar.classList.add('oculto');
+    btnRepetir.classList.add('oculto');
+
+    let flujo = null;
+    let fotoCapturada = null;
+
+    function detener(){
+      if(flujo){ flujo.getTracks().forEach(t => t.stop()); flujo = null; }
+      modal.classList.add('oculto');
+      btnCapturar.removeEventListener('click', capturar);
+      btnUsar.removeEventListener('click', usarFoto);
+      btnRepetir.removeEventListener('click', repetir);
+      btnCancelar.removeEventListener('click', cancelar);
+    }
+
+    function capturar(){
+      let ancho = video.videoWidth, alto = video.videoHeight;
+      if(!ancho || !alto){ return; }
+      const anchoMaximo = 1000;
+      if(ancho > anchoMaximo){
+        alto = Math.round(alto * (anchoMaximo / ancho));
+        ancho = anchoMaximo;
+      }
+      canvas.width = ancho; canvas.height = alto;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, ancho, alto);
+
+      const nota = entradaNota.value.trim();
+      const lineas = [
+        new Date().toLocaleString('es-CO'),
+        ubicacion ? `Lat ${ubicacion.lat.toFixed(6)}, Lng ${ubicacion.lng.toFixed(6)}` : 'Ubicación no disponible'
+      ];
+      if(nota) lineas.push('Obs.: ' + nota);
+
+      const tamanoFuente = Math.max(13, Math.round(ancho / 42));
+      const alturaLinea = tamanoFuente + 8;
+      const alturaFranja = alturaLinea * lineas.length + 10;
+
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(0, alto - alturaFranja, ancho, alturaFranja);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `${tamanoFuente}px Arial`;
+      ctx.textBaseline = 'top';
+      lineas.forEach((linea, i) => {
+        ctx.fillText(linea, 10, alto - alturaFranja + 6 + i * alturaLinea);
+      });
+
+      fotoCapturada = canvas.toDataURL('image/jpeg', 0.82);
+      previa.src = fotoCapturada;
+      previa.classList.remove('oculto');
+      video.classList.add('oculto');
+      btnCapturar.classList.add('oculto');
+      btnUsar.classList.remove('oculto');
+      btnRepetir.classList.remove('oculto');
+    }
+
+    function repetir(){
+      fotoCapturada = null;
+      previa.classList.add('oculto');
+      video.classList.remove('oculto');
+      btnCapturar.classList.remove('oculto');
+      btnUsar.classList.add('oculto');
+      btnRepetir.classList.add('oculto');
+    }
+
+    function usarFoto(){
+      const nota = entradaNota.value.trim();
+      const resultado = { fotoData: fotoCapturada, nota: nota };
+      detener();
+      resolve(resultado);
+    }
+
+    function cancelar(){
+      detener();
+      reject(new Error('Se canceló la captura de la fotografía.'));
+    }
+
+    btnCapturar.addEventListener('click', capturar);
+    btnUsar.addEventListener('click', usarFoto);
+    btnRepetir.addEventListener('click', repetir);
+    btnCancelar.addEventListener('click', cancelar);
+
+    modal.classList.remove('oculto');
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+      .then(s => { flujo = s; video.srcObject = s; })
+      .catch(() => {
+        detener();
+        reject(new Error('No fue posible acceder a la cámara. Verifique los permisos del navegador.'));
+      });
   });
 }
 
@@ -648,9 +820,8 @@ document.getElementById('btnInicio').addEventListener('click', async () => {
     mostrarMensaje('msjPrincipal', 'Obteniendo su ubicación…', 'info');
     const ubicacion = await obtenerUbicacion();
 
-    mostrarMensaje('msjPrincipal', 'Capture la fotografía de inicio de labor.', 'info');
-    const archivo = await capturarFoto();
-    const fotoData = await comprimirImagen(archivo);
+    mostrarMensaje('msjPrincipal', '', '');
+    const captura = await abrirCamara('Fotografía de inicio de labor', ubicacion);
 
     const viaje = {
       tripId: generarId(),
@@ -659,7 +830,8 @@ document.getElementById('btnInicio').addEventListener('click', async () => {
         fecha: new Date().toISOString(),
         lat: ubicacion.lat,
         lng: ubicacion.lng,
-        fotoData: fotoData,
+        fotoData: captura.fotoData,
+        nota: captura.nota,
         sincronizado: false
       },
       fin: null,
@@ -692,15 +864,15 @@ document.getElementById('btnFin').addEventListener('click', async () => {
     mostrarMensaje('msjPrincipal', 'Obteniendo su ubicación…', 'info');
     const ubicacion = await obtenerUbicacion();
 
-    mostrarMensaje('msjPrincipal', 'Capture la fotografía de fin de labor.', 'info');
-    const archivo = await capturarFoto();
-    const fotoData = await comprimirImagen(archivo);
+    mostrarMensaje('msjPrincipal', '', '');
+    const captura = await abrirCamara('Fotografía de fin de labor', ubicacion);
 
     viaje.fin = {
       fecha: new Date().toISOString(),
       lat: ubicacion.lat,
       lng: ubicacion.lng,
-      fotoData: fotoData,
+      fotoData: captura.fotoData,
+      nota: captura.nota,
       sincronizado: false
     };
     viaje.estadoLocal = 'finalizado_pendiente_cert';
@@ -733,7 +905,7 @@ async function generarCertificado(viaje){
   doc.text('CERTIFICADO DE JORNADA LABORAL', 297.5, y, { align:'center' });
   y += 30;
 
-  doc.setDrawColor(103,58,183);
+  doc.setDrawColor(11,128,67);
   doc.setLineWidth(1.5);
   doc.line(margen, y, 545, y);
   y += 28;
@@ -750,8 +922,10 @@ async function generarCertificado(viaje){
     ['Identificador de jornada:', viaje.tripId],
     ['Inicio de labor:', formatearFecha(viaje.inicio.fecha)],
     ['Ubicación de inicio:', `Lat ${viaje.inicio.lat.toFixed(6)}, Lng ${viaje.inicio.lng.toFixed(6)}`],
+    ['Observación de inicio:', viaje.inicio.nota || '—'],
     ['Fin de labor:', formatearFecha(viaje.fin.fecha)],
     ['Ubicación de fin:', `Lat ${viaje.fin.lat.toFixed(6)}, Lng ${viaje.fin.lng.toFixed(6)}`],
+    ['Observación de fin:', viaje.fin.nota || '—'],
     ['Duración total:', `${horas} horas ${minutos} minutos`],
     ['Fecha de generación:', formatearFecha(new Date().toISOString())]
   ];
@@ -811,7 +985,8 @@ async function sincronizarViajeActivo(){
         fecha: viaje.inicio.fecha,
         lat: viaje.inicio.lat,
         lng: viaje.inicio.lng,
-        fotoBase64: viaje.inicio.fotoData
+        fotoBase64: viaje.inicio.fotoData,
+        nota: viaje.inicio.nota || ''
       });
       if(resultado.ok){
         viaje.inicio.sincronizado = true;
@@ -831,7 +1006,8 @@ async function sincronizarViajeActivo(){
         fecha: viaje.fin.fecha,
         lat: viaje.fin.lat,
         lng: viaje.fin.lng,
-        fotoBase64: viaje.fin.fotoData
+        fotoBase64: viaje.fin.fotoData,
+        nota: viaje.fin.nota || ''
       });
       if(resultado.ok){
         viaje.fin.sincronizado = true;
